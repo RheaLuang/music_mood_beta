@@ -44,16 +44,13 @@ The app uses React, TypeScript, Vite, Framer Motion, Lucide icons, and plain CSS
 
 ## GitHub Pages
 
-The target supplied by the user is `RheaLuang/music_mood_beta`.
+Repository: [RheaLuang/music_mood_beta](https://github.com/RheaLuang/music_mood_beta) (`main`).
 
-`.github/workflows/deploy.yml` installs dependencies, runs tests, builds, uploads the static artifact, and deploys to GitHub Pages. It runs on `main`, `master`, or manual dispatch. Select **GitHub Actions** as the repository's Pages source before the first deployment.
+`.github/workflows/deploy.yml` installs dependencies, runs tests, builds, uploads the static artifact, and deploys to GitHub Pages. It runs on `main`, `master`, or manual dispatch. GitHub Actions is configured as this repository's Pages source.
 
 Vite uses a relative base (`./`) so bundled JavaScript, CSS, fonts, and artwork work below `/music_mood_beta/`. Navigation uses URL hashes, avoiding server-side route fallback requirements. Reading links can be refreshed on the same device where their local Moment exists.
 
-Expected public address after a successful deployment:
-`https://rhealuang.github.io/music_mood_beta/`
-
-Deployment has not been performed: the connected GitHub integration returns 404 for the supplied repository, and Git cannot authenticate. Existing remote history has not been read or modified. Integrate this implementation into that repository only after access is available, preserving any existing work and configuring the workflow for its actual branch/layout.
+Live demo: [https://rhealuang.github.io/music_mood_beta/](https://rhealuang.github.io/music_mood_beta/)
 
 ## Verification
 
@@ -62,7 +59,7 @@ Deployment has not been performed: the connected GitHub integration returns 404 
 - Dependency audit reports no known vulnerabilities for the installed versions.
 - Browser checks covered creation, writing, optional title removal, highlighting, stickers, mood selection, sleeve customization, photo insertion, saving, editing, shelf inspection/return/opening, reading, pause/resume, favorites, refresh persistence, and year-to-month navigation.
 - Production preview tested under `/music_mood_beta/`, including local artwork and phone viewport layout.
-- Public GitHub Pages and GitHub Actions verification remain blocked by repository access.
+- GitHub Actions build and deployment succeeded. The live site was checked for Now Playing, Moment creation and saving, Month shelf inspection, Reading Mode, playback pause, and Year navigation.
 
 ## Assets
 
