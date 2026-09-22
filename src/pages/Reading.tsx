@@ -1,10 +1,15 @@
-import { ArrowLeft, Heart, Pause, Play, Pencil } from "lucide-react";
+import { lazy, Suspense, useState } from "react";
+const ShareDiary = lazy(() =>
+  import("../components/ShareDiary").then((m) => ({ default: m.ShareDiary })),
+);
+import { ArrowLeft, Heart, Pause, Play, Pencil, Share2 } from "lucide-react";
 import type { Moment } from "../types";
 import { Record } from "../components/Vinyl";
 import { DiaryHeader, DiaryContent } from "../components/Diary";
 export function Reading({
   moment: m,
   playing,
+  progress,
   toggle,
   back,
   edit,
@@ -12,11 +17,13 @@ export function Reading({
 }: {
   moment: Moment;
   playing: boolean;
+  progress: number;
   toggle: () => void;
   back: () => void;
   edit: () => void;
   like: () => void;
 }) {
+  const [sharing, setSharing] = useState(false);
   return (
     <main className="reading">
       <header className="page-top">
@@ -48,6 +55,9 @@ export function Reading({
               <Play size={22} fill="currentColor" />
             )}
           </button>
+          <button aria-label="Share diary" onClick={() => setSharing(true)}>
+            <Share2 size={20} />
+          </button>
         </div>
       </div>
       <div className="reading-song">
@@ -68,6 +78,28 @@ export function Reading({
           <small>RAMBLING · A PRIVATE PRESSING</small>
         </footer>
       </article>
+      <button
+        className="primary share-diary-button"
+        onClick={() => setSharing(true)}
+      >
+        <Share2 size={18} /> Share this moment
+      </button>
+      {sharing && (
+        <Suspense
+          fallback={
+            <p role="status" className="footnote">
+              Opening share preview…
+            </p>
+          }
+        >
+          <ShareDiary
+            moment={m}
+            playing={playing}
+            progress={progress}
+            close={() => setSharing(false)}
+          />
+        </Suspense>
+      )}
     </main>
   );
 }

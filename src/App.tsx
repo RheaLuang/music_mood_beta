@@ -218,6 +218,7 @@ export default function App() {
         ) : nav.page === "read" && current ? (
           <Reading
             moment={current}
+            progress={progress}
             playing={playing}
             toggle={() => setPlaying(!playing)}
             back={() => {

@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from "react";
+import { chineseMonth, chineseYear } from "../utils/date";
 import { richDocument, highlightColors } from "../utils/richDocument";
 import type { Moment, RichNode } from "../types";
 export function DiaryHeader({ date }: { date: string }) {
@@ -7,8 +8,8 @@ export function DiaryHeader({ date }: { date: string }) {
     <header className="diary-header">
       <div className="date-main">
         <span className="day">{d.getDate().toString().padStart(2, "0")}</span>
-        <div className="month">{d.getMonth() + 1}月</div>
-        <div className="year">{d.getFullYear()}年</div>
+        <div className="month">{chineseMonth(d.getMonth())}</div>
+        <div className="year">{chineseYear(d.getFullYear())}</div>
       </div>
       <div className="time-box">
         <span>

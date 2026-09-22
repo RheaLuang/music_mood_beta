@@ -238,18 +238,11 @@ export function Collection({
               </p>
             </>
           ) : (
-            <div
-              className={`sleeve-grid ${mode === "Week" ? "scattered" : ""}`}
-            >
+            <div className="sleeve-grid">
               {filtered.map((m, i) => (
                 <button
                   className="collection-item"
                   key={m.id}
-                  style={
-                    {
-                      "--tilt": `${[-4, 3, 2, -2][i % 4]}deg`,
-                    } as React.CSSProperties
-                  }
                   onClick={(e) => pull(m, e.currentTarget)}
                 >
                   <Sleeve moment={m} />

@@ -811,3 +811,164 @@ mark {
   color: #878174;
   margin: 2px 0 16px;
 }
+
+.sleeve-grid .sleeve {
+  transform: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+@media (hover: hover) {
+  .sleeve-grid .collection-item:hover .sleeve {
+    transform: scale(1.035);
+    box-shadow: 0 10px 22px #302a2125;
+  }
+}
+.sleeve-grid .collection-item:focus-visible .sleeve {
+  transform: scale(1.035);
+  outline: 2px solid #8d9384;
+  outline-offset: 4px;
+}
+
+.share-diary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: calc(100% - 48px);
+  margin: 0 24px 32px;
+}
+.share-dialog {
+  margin: auto;
+  width: min(680px, calc(100% - 24px));
+  max-height: 90dvh;
+  overflow: auto;
+  border: 1px solid #d9d5c9;
+  border-radius: 12px;
+  background: #faf9f4;
+  color: #3e453c;
+  padding: 24px;
+  box-shadow: 0 20px 80px #0003;
+}
+.share-dialog::backdrop {
+  background: #29312bb0;
+  backdrop-filter: blur(8px);
+}
+.share-dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.share-dialog h2 {
+  font-size: 28px;
+  margin: 8px 0;
+}
+.share-dialog small {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.share-dialog > p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.share-previews {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.share-previews a {
+  color: inherit;
+  text-decoration: none;
+}
+.share-previews img {
+  width: 100%;
+  height: auto;
+  border: 1px solid #dedbd2;
+  box-shadow: 0 3px 8px #0001;
+}
+.share-previews span {
+  display: block;
+  font-size: 11px;
+  margin-top: 7px;
+}
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.share-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 180px;
+  font-size: 13px;
+  padding: 12px;
+}
+.share-render {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 390px;
+  pointer-events: none;
+}
+.share-render *,
+.share-render *::before,
+.share-render *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.share-diary {
+  box-sizing: border-box;
+  width: 390px;
+  padding: 16px 26px 28px !important;
+  background: #fbfaf6;
+}
+.share-brand {
+  color: #837e72;
+  font: 9px sans-serif;
+  letter-spacing: 1.5px;
+  margin-bottom: 20px;
+}
+.share-diary .diary-header {
+  margin-bottom: 30px;
+}
+.share-diary .notes-reading img {
+  max-height: 620px;
+  width: 100%;
+  object-fit: contain;
+}
+.share-diary .notes-reading h2 {
+  font-size: 28px;
+}
+.share-player {
+  width: 390px;
+  height: 844px;
+  background: #f6f5f1;
+  overflow: hidden;
+}
+.share-player .player {
+  width: 390px;
+  height: 820px;
+  min-height: 0;
+  padding: 20px 28px;
+  box-sizing: border-box;
+}
+.share-player .player-top {
+  margin-bottom: 20px;
+}
+.share-player .album {
+  width: 334px;
+  height: 334px;
+}
+.share-player .song-info {
+  padding-top: 22px;
+}
+.share-player .player-bottom {
+  margin-top: 22px;
+}
+.share-player .demo-note {
+  margin-top: 10px;
+}

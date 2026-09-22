@@ -223,21 +223,6 @@ export function Editor({
             />
             <EditorContent editor={editor} />
           </div>
-          <div className="decoration-tools">
-            <span className="small">A little finishing touch</span>
-            <div>
-              {["✺", "♡", "✿", "☾", "〰"].map((s) => (
-                <button
-                  key={s}
-                  aria-label={"Insert " + s + " decoration"}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => editor?.chain().focus().insertContent(s).run()}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       }
       {

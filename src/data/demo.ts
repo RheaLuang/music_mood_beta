@@ -13,7 +13,7 @@ export const songs: Song[] = [
     title: "Window Seat",
     artist: "June & the River",
     album: "Small Hours",
-    artwork: "artwork/forest.jpg",
+    artwork: "artwork/portrait.jpg",
     duration: 198,
   },
   {
@@ -29,7 +29,7 @@ export const songs: Song[] = [
     title: "A Little Longer",
     artist: "Milo Green",
     album: "Soft Light",
-    artwork: "artwork/sea.jpg",
+    artwork: "artwork/cat.jpg",
     duration: 212,
   },
 ];
@@ -110,11 +110,16 @@ const chineseFragments = [
 ];
 export function localizeStoredMoment(m: Moment): Moment {
   let next = m;
+  if (m.id.startsWith("demo-") && !m.sleeveImage) {
+    const currentSong = songs.find((s) => s.id === m.song.id);
+    if (currentSong)
+      next = { ...m, song: { ...m.song, artwork: currentSong.artwork } };
+  }
   if (m.id.startsWith("demo-")) {
     const i = chineseFragments.findIndex(([, body]) => body === m.body);
     if (i >= 0 && !m.blocks && !m.document)
       next = {
-        ...m,
+        ...next,
         body: englishFragments[i][1],
         title:
           m.title === chineseFragments[i][0] ? englishFragments[i][0] : m.title,
