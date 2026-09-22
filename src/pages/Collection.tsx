@@ -120,44 +120,68 @@ export function Collection({
           transition={{ duration: 0.18 }}
         >
           {mode === "Year" ? (
-            <div className="year-archive">
-              {Array.from({ length: 12 }, (_, month) => {
-                const entries = filtered.filter(
-                  (m) => new Date(m.createdAt).getMonth() === month,
-                );
-                return (
-                  <button
-                    className="archive-month"
-                    key={month}
-                    onClick={() => {
-                      setDate(new Date(date.getFullYear(), month, 1));
-                      setMode("Month");
-                      setGrid(false);
-                    }}
-                  >
-                    <div className="mini-shelf">
-                      {entries.slice(0, 12).map((m) => (
-                        <i
-                          key={m.id}
-                          style={{
-                            backgroundImage: `url(${m.sleeveImage || m.song.artwork})`,
-                          }}
-                        />
-                      ))}
-                      {!entries.length && <span>Room for a new memory</span>}
-                    </div>
-                    <div>
-                      <strong>
-                        {new Date(2000, month).toLocaleDateString("en-GB", {
-                          month: "long",
-                        })}
-                      </strong>
-                      <small>{entries.length} records</small>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              <p className="year-example-note">
+                A year on the shelf. Sample records fill out the demo calendar.
+              </p>
+              <div className="year-archive">
+                {Array.from({ length: 12 }, (_, month) => {
+                  const entries = filtered.filter(
+                    (m) => new Date(m.createdAt).getMonth() === month,
+                  );
+                  return (
+                    <button
+                      className="archive-month"
+                      key={month}
+                      onClick={() => {
+                        setDate(new Date(date.getFullYear(), month, 1));
+                        setMode("Month");
+                        setGrid(false);
+                      }}
+                    >
+                      <div className="mini-shelf">
+                        {entries.slice(0, 8).map((m, i) => (
+                          <span
+                            className="archive-spine"
+                            aria-hidden="true"
+                            key={m.id}
+                            style={
+                              {
+                                "--spine-paper": [
+                                  "#ddd5c2",
+                                  "#aab4a4",
+                                  "#b7a28c",
+                                  "#727f78",
+                                  "#d7c9b2",
+                                  "#abb6b6",
+                                  "#8e8a78",
+                                  "#cab9a5",
+                                ][(month + i) % 8],
+                                "--spine-ink":
+                                  (month + i) % 8 === 3 ? "#f0eddf" : "#51574e",
+                                "--spine-height": `${[79, 87, 82, 91, 85, 76, 88, 81][(month + i) % 8]}px`,
+                              } as React.CSSProperties
+                            }
+                          >
+                            <b>{String(i + 1).padStart(2, "0")}</b>
+                            <em>{m.song.album}</em>
+                          </span>
+                        ))}
+                        {!entries.length && <span>Room for a new memory</span>}
+                      </div>
+                      <div>
+                        <strong>
+                          {new Date(2000, month).toLocaleDateString("en-GB", {
+                            month: "long",
+                          })}
+                        </strong>
+                        <small>{entries.length} records</small>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           ) : !filtered.length ? (
             <div className="empty">
               <span>○</span>

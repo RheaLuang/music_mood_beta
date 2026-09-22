@@ -1,7 +1,12 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { MotionConfig } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, Disc3 } from "lucide-react";
-import { songs, seedMoments, localizeStoredMoment } from "./data/demo";
+import {
+  songs,
+  seedMoments,
+  localizeStoredMoment,
+  ensureYearExamples,
+} from "./data/demo";
 import type { Moment } from "./types";
 import {
   createMoment,
@@ -29,10 +34,10 @@ export default function App() {
       const raw = localStorage.getItem(STORAGE_KEY);
       const data = raw ? JSON.parse(raw) : null;
       return validMoments(data)
-        ? data.map(localizeStoredMoment)
-        : seedMoments();
+        ? ensureYearExamples(data.map(localizeStoredMoment))
+        : ensureYearExamples(seedMoments());
     } catch {
-      return seedMoments();
+      return ensureYearExamples(seedMoments());
     }
   });
   const [nav, setNav] = useState<Route>(route);

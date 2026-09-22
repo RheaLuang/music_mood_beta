@@ -176,3 +176,46 @@ export function seedMoments(now = new Date()): Moment[] {
     };
   });
 }
+
+// Fill out the concept-demo calendar once, preserving existing and edited notes.
+export function ensureYearExamples(
+  items: Moment[],
+  now = new Date(),
+): Moment[] {
+  if (!items.some((m) => m.id.startsWith("demo-"))) return items;
+  const year = now.getFullYear();
+  const result = [...items];
+  for (let month = 0; month < 12; month++) {
+    const count = result.filter((m) => {
+      const d = new Date(m.createdAt);
+      return d.getFullYear() === year && d.getMonth() === month;
+    }).length;
+    for (let i = count; i < 4; i++) {
+      const id = `demo-calendar-${year}-${month}-${i}`;
+      if (result.some((m) => m.id === id)) continue;
+      const index = month * 4 + i;
+      const [title, body] = englishFragments[index % englishFragments.length];
+      result.push({
+        id,
+        createdAt: new Date(
+          year,
+          month,
+          3 + i * 7,
+          17 + i,
+          12 + month,
+        ).toISOString(),
+        song: songs[(month + i) % songs.length],
+        title: title || "An ordinary kind of lovely",
+        body,
+        mood: moods[(month + i) % moods.length],
+        font: "sans",
+        highlight: "",
+        photos: [],
+        stickers: [],
+        sleeve: i % 2 ? "original" : "paper",
+        liked: false,
+      });
+    }
+  }
+  return result.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
