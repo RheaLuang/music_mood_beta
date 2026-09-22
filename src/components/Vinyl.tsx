@@ -12,7 +12,7 @@ export function Record({
       style={{ animationPlayState: playing ? "running" : "paused" }}
     >
       <div className="record-label">
-        <img src={song.artwork} alt={`${song.album} 唱片中心图`} />
+        <img src={song.artwork} alt={`${song.album} record label`} />
         <i />
       </div>
     </div>
@@ -25,12 +25,12 @@ export function Sleeve({ moment }: { moment: Moment }) {
     >
       <img
         src={moment.sleeveImage || moment.song.artwork}
-        alt={`${moment.song.album} 封套`}
+        alt={`${moment.song.album} sleeve`}
       />
       <div className="sleeve-copy">
         <small>
           RAMBLING /{" "}
-          {new Date(moment.createdAt).toLocaleDateString("zh-CN", {
+          {new Date(moment.createdAt).toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
           })}

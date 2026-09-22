@@ -34,13 +34,13 @@ export const songs: Song[] = [
   },
 ];
 export const moods: Mood[] = [
-  { level: 1, emoji: "😄", label: "很开心", color: "#d3a456" },
-  { level: 2, emoji: "🙂", label: "开心", color: "#c7b878" },
-  { level: 3, emoji: "😐", label: "平静", color: "#a9b6a2" },
-  { level: 4, emoji: "🙁", label: "低落", color: "#91a8b1" },
-  { level: 5, emoji: "😞", label: "很难过", color: "#8391a7" },
+  { level: 1, emoji: "😄", label: "Delighted", color: "#d3a456" },
+  { level: 2, emoji: "🙂", label: "Good", color: "#c7b878" },
+  { level: 3, emoji: "😐", label: "Steady", color: "#a9b6a2" },
+  { level: 4, emoji: "🙁", label: "Low", color: "#91a8b1" },
+  { level: 5, emoji: "😞", label: "Heavy", color: "#8391a7" },
 ];
-const legacyFragments = [
+const englishFragments = [
   [
     "The long way home",
     "I missed my stop on purpose. There was still a little light left on the water, and this song made the whole bus feel like a room of its own.\n\nFor once, being late felt like getting something back.",
@@ -74,7 +74,7 @@ const legacyFragments = [
     "I did less than I planned. Made dinner anyway. Opened the window. Let a good song count as something good.",
   ],
 ];
-const fragments = [
+const chineseFragments = [
   [
     "绕远一点回家",
     "我故意坐过了一站。水面还留着一点光，这首歌让整辆公交车像一个只属于自己的房间。\n\n原来偶尔迟到，也像是把什么东西找了回来。",
@@ -111,13 +111,14 @@ const fragments = [
 export function localizeStoredMoment(m: Moment): Moment {
   let next = m;
   if (m.id.startsWith("demo-")) {
-    const i = legacyFragments.findIndex(([, body]) => body === m.body);
-    if (i >= 0 && !m.blocks)
+    const i = chineseFragments.findIndex(([, body]) => body === m.body);
+    if (i >= 0 && !m.blocks && !m.document)
       next = {
         ...m,
-        body: fragments[i][1],
-        title: m.title === legacyFragments[i][0] ? fragments[i][0] : m.title,
-        highlight: m.highlight ? "把什么东西找了回来" : "",
+        body: englishFragments[i][1],
+        title:
+          m.title === chineseFragments[i][0] ? englishFragments[i][0] : m.title,
+        highlight: m.highlight ? "getting something back" : "",
       };
   }
   if (next.mood && !next.mood.level) {
@@ -139,6 +140,14 @@ export function localizeStoredMoment(m: Moment): Moment {
       },
     };
   }
+  if (next.id.startsWith("demo-") && next.mood?.level) {
+    const labels = ["很开心", "开心", "平静", "低落", "很难过"];
+    if (labels[next.mood.level - 1] === next.mood.label)
+      next = {
+        ...next,
+        mood: { ...next.mood, label: moods[next.mood.level - 1].label },
+      };
+  }
   return next;
 }
 export function seedMoments(now = new Date()): Moment[] {
@@ -150,7 +159,7 @@ export function seedMoments(now = new Date()): Moment[] {
     );
     d.setHours(17 + (i % 5), 12 + i * 2, 0, 0);
     if (d > now) d.setTime(now.getTime() - 3600000);
-    const [title, body] = fragments[i % 8];
+    const [title, body] = englishFragments[i % 8];
     return {
       id: `demo-${i}`,
       createdAt: d.toISOString(),
@@ -159,7 +168,7 @@ export function seedMoments(now = new Date()): Moment[] {
       body,
       mood: i % 5 === 1 ? undefined : moods[i % 5],
       font: i % 3 === 0 ? "serif" : "sans",
-      highlight: i % 4 === 0 ? "把什么东西找了回来" : "",
+      highlight: i % 4 === 0 ? "getting something back" : "",
       photos: i % 6 === 0 ? ["artwork/sea.jpg"] : [],
       stickers: i % 4 === 0 ? ["✺"] : [],
       sleeve: i % 3 === 0 ? "paper" : i % 4 === 0 ? "ink" : "original",

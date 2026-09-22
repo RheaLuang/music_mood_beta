@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { MotionConfig } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, Disc3 } from "lucide-react";
 import { songs, seedMoments, localizeStoredMoment } from "./data/demo";
@@ -10,7 +10,9 @@ import {
   validMoments,
 } from "./store/moments";
 import { Player } from "./pages/Player";
-import { Editor } from "./pages/Editor";
+const Editor = lazy(() =>
+  import("./pages/Editor").then((module) => ({ default: module.Editor })),
+);
 import { Reading } from "./pages/Reading";
 import { Collection } from "./pages/Collection";
 import { Record } from "./components/Vinyl";
@@ -120,7 +122,7 @@ export default function App() {
     setDraft(null);
     setTab(1);
     go("home");
-    setToast("刻好了。这一面，归你。");
+    setToast("Pressed and saved. This side is yours.");
     return true;
   }
   function open(m: Moment) {
@@ -154,14 +156,14 @@ export default function App() {
       <div className="desktop-note">
         <span className="brand">rambling</span>
         <p>
-          有些心事，适合单曲循环。
+          Some thoughts deserve another listen.
           <br />
-          给它们找个不怕落灰的地方。
+          Give them a little room on the shelf.
         </p>
         <span className="desktop-bottom">
-          第一辑
+          VOLUME ONE
           <br />
-          音乐 → 此刻 → 回忆
+          MUSIC → MOMENT → MEMORY
         </span>
       </div>
       <div className="app-shell">
@@ -191,15 +193,23 @@ export default function App() {
             setShuffle={() => setShuffle(!shuffle)}
           />
         ) : nav.page === "edit" && draft ? (
-          <Editor
-            key={draft.id}
-            initial={draft}
-            save={save}
-            cancel={() => {
-              setDraft(null);
-              go(current ? "read" : "home", current?.id);
-            }}
-          />
+          <Suspense
+            fallback={
+              <p className="footnote" role="status">
+                Opening your notebook…
+              </p>
+            }
+          >
+            <Editor
+              key={draft.id}
+              initial={draft}
+              save={save}
+              cancel={() => {
+                setDraft(null);
+                go(current ? "read" : "home", current?.id);
+              }}
+            />
+          </Suspense>
         ) : nav.page === "read" && current ? (
           <Reading
             moment={current}
@@ -219,13 +229,13 @@ export default function App() {
                   upsertMoment(moments, { ...current, liked: !current.liked }),
                 )
               )
-                setToast("暂时无法保存，请稍后重试。");
+                setToast("Could not save just now. Please try again.");
             }}
           />
         ) : (
           <main className="home">
             <header className="page-top">
-              <button aria-label="返回播放器" onClick={() => go("player")}>
+              <button aria-label="Back to player" onClick={() => go("player")}>
                 <ArrowLeft />
               </button>
               <span className="wordmark">rambling</span>
@@ -236,13 +246,13 @@ export default function App() {
                 className={tab === 0 ? "selected" : ""}
                 onClick={() => switchTab(0)}
               >
-                制作黑胶
+                Create a vinyl
               </button>
               <button
                 className={tab === 1 ? "selected" : ""}
                 onClick={() => switchTab(1)}
               >
-                我的黑胶 <small>{moments.length}</small>
+                My vinyls <small>{moments.length}</small>
               </button>
             </div>
             <div
@@ -256,17 +266,21 @@ export default function App() {
             >
               <section className="create-page">
                 <div className="create-heading">
-                  <span className="eyebrow">脑内小剧场，开录。</span>
+                  <span className="eyebrow">
+                    A LITTLE ROOM FOR YOUR INNER MONOLOGUE
+                  </span>
                   <h1>
-                    这首歌，
+                    This song,
                     <br />
-                    <em>有你的戏。</em>
+                    <em>your story.</em>
                   </h1>
-                  <p>刚才想到了什么？趁它还没溜走，写下来。</p>
+                  <p>
+                    What just crossed your mind? Catch it before it wanders off.
+                  </p>
                 </div>
                 <button
                   className="create-art"
-                  aria-label="记录此刻"
+                  aria-label="Create a moment"
                   onClick={() => {
                     setDraft(createMoment(song));
                     setRepeat(true);
@@ -278,28 +292,27 @@ export default function App() {
                     <small>
                       RAMBLING
                       <br />
-                      非卖品 · 仅此一份
+                      NOT FOR SALE · ONE OF ONE
                     </small>
                     <span className="handwritten">
-                      今日份心事，
+                      Today’s thoughts,
                       <br />
-                      请轻拿轻放。
+                      handle with care.
                     </span>
                     <span className="sleeve-star">✳</span>
                     <div className="sleeve-rule">
-                      A 面 <span>你的此刻</span>
+                      SIDE A <span>YOUR MOMENT</span>
                     </div>
                   </div>
                   <div className="paper-ticket">
-                    一面音乐
-                    <br />
-                    一面是你
+                    A side of music
+                    <br />A side of you
                   </div>
                 </button>
                 <div className="current-soundtrack">
                   <img src={song.artwork} alt="" />
                   <div>
-                    <small>此刻，正在听</small>
+                    <small>THE SOUNDTRACK RIGHT NOW</small>
                     <strong>{song.title}</strong>
                     <span>{song.artist}</span>
                   </div>
@@ -317,9 +330,11 @@ export default function App() {
                     go("edit");
                   }}
                 >
-                  记录此刻 <ArrowUpRight size={20} />
+                  Create a moment <ArrowUpRight size={20} />
                 </button>
-                <p className="footnote">写两句也算。今天不必交出一篇大作。</p>
+                <p className="footnote">
+                  A sentence counts. No masterpiece required.
+                </p>
               </section>
               <section className="collection-page">
                 <Collection moments={moments} open={open} />
@@ -334,14 +349,13 @@ export default function App() {
         )}
       </div>
       <div className="desktop-caption">
-        <span>静静听。</span>
+        <span>STAY A LITTLE.</span>
         <p>
-          在一面音乐
-          <br />
-          和一段回忆之间。
+          Somewhere between
+          <br />a song and a memory.
         </p>
         <div className="tiny-record">◉</div>
-        <span>内有心事 · 随时开门</span>
+        <span>THOUGHTS INSIDE · ALWAYS OPEN</span>
       </div>
     </MotionConfig>
   );

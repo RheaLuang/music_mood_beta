@@ -471,3 +471,163 @@ mark {
 .sleeve.paper {
   background-color: #ded2b8;
 }
+
+/* A single Notes-style document: selections and formatting stay in the text. */
+[hidden] {
+  display: none !important;
+}
+.notes-toolbar {
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 15;
+}
+.format-actions,
+.marker-colors {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+.notes-toolbar button,
+.notes-toolbar .icon-upload {
+  width: 38px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0;
+}
+.notes-toolbar button[aria-pressed="true"] {
+  background: #294e5260;
+  box-shadow: inset 0 0 0 1px #294e5280;
+}
+.notes-toolbar button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.marker-colors > span {
+  font-size: 11px;
+  margin-right: 6px;
+}
+.marker-colors button:not(.clear-marker) {
+  width: 36px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+.marker-colors button:not(.clear-marker)::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--marker);
+  border: 1px solid #68746738;
+}
+.marker-colors button[aria-pressed="true"]:not(.clear-marker)::before {
+  outline: 1.5px solid #294e52;
+  outline-offset: 3px;
+}
+.marker-colors button:focus-visible:not(.clear-marker) {
+  outline: 2px solid #294e52;
+}
+.notes-document,
+.notes-reading {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #30382f;
+  overflow-wrap: anywhere;
+}
+.notes-document {
+  min-height: 280px;
+  outline: none;
+  padding-bottom: 60px;
+  cursor: text;
+  white-space: pre-wrap;
+}
+.notes-document p,
+.notes-reading p {
+  margin: 0 0 0.75em;
+  font-size: inherit;
+  line-height: inherit;
+  min-height: 1.8em;
+}
+.notes-document p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #777c72;
+  pointer-events: none;
+}
+.notes-document strong,
+.notes-reading strong {
+  font-weight: 700;
+}
+.notes-document mark,
+.notes-reading mark {
+  color: inherit;
+  padding: 1px 0;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.notes-document img {
+  display: block;
+  max-width: 100%;
+  max-height: 560px;
+  object-fit: contain;
+  margin: 1em auto;
+}
+.notes-document .ProseMirror-selectednode {
+  outline: 2px solid #587e83;
+  outline-offset: 4px;
+}
+.notes-document ul,
+.notes-document ol,
+.notes-reading ul,
+.notes-reading ol {
+  padding-left: 1.5em;
+  margin: 0.75em 0;
+}
+.notes-document li p,
+.notes-reading li p {
+  margin: 0;
+}
+.notes-document blockquote,
+.notes-reading blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  border-left: 3px solid #abb7a1;
+}
+.notes-document:focus-visible {
+  outline: none;
+}
+.notes-toolbar button:focus-visible {
+  outline: 2px solid #294e52;
+  outline-offset: 2px;
+}
+.blank-sleeve .handwritten {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -0.6px;
+  font-weight: 400;
+  margin-top: 22px;
+  max-width: 100%;
+}
+@media (max-width: 400px) {
+  .blank-sleeve .handwritten {
+    font-size: 21px;
+  }
+  .marker-colors {
+    gap: 2px;
+  }
+}

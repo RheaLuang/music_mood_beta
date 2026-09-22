@@ -37,6 +37,33 @@ function validBlock(value: unknown): value is DiaryBlock {
     (block.highlight === undefined || typeof block.highlight === "string")
   );
 }
+function validDocument(value: unknown, depth = 0): boolean {
+  if (!value || typeof value !== "object" || depth > 40) return false;
+  const node = value as Record<string, unknown>;
+  return (
+    typeof node.type === "string" &&
+    [
+      "doc",
+      "paragraph",
+      "text",
+      "hardBreak",
+      "image",
+      "bulletList",
+      "orderedList",
+      "listItem",
+      "blockquote",
+    ].includes(node.type) &&
+    (node.type !== "text" || typeof node.text === "string") &&
+    (node.attrs === undefined ||
+      (node.attrs !== null && typeof node.attrs === "object")) &&
+    (node.marks === undefined ||
+      (Array.isArray(node.marks) &&
+        node.marks.every((mark) => mark && typeof mark.type === "string"))) &&
+    (node.content === undefined ||
+      (Array.isArray(node.content) &&
+        node.content.every((child) => validDocument(child, depth + 1))))
+  );
+}
 export function validMoments(value: unknown): value is Moment[] {
   return (
     Array.isArray(value) &&
@@ -49,6 +76,8 @@ export function validMoments(value: unknown): value is Moment[] {
         typeof m.song?.id === "string" &&
         typeof m.song.artwork === "string" &&
         typeof m.body === "string" &&
+        (m.document === undefined ||
+          (m.document?.type === "doc" && validDocument(m.document))) &&
         typeof m.title === "string" &&
         typeof m.highlight === "string" &&
         ["serif", "sans", "hand"].includes(m.font) &&

@@ -34,7 +34,7 @@ export function Collection({
     select(null);
     source.current?.focus({ preventScroll: true });
   }
-  const periodNames = { Week: "周", Month: "月", Year: "年" };
+  const periodNames = { Week: "Week", Month: "Month", Year: "Year" };
   const filtered = moments.filter((m) => {
     const d = new Date(m.createdAt);
     if (mode === "Year") return d.getFullYear() === date.getFullYear();
@@ -61,18 +61,20 @@ export function Collection({
   }
   const heading =
     mode === "Year"
-      ? date.getFullYear() + "年"
+      ? String(date.getFullYear())
       : mode === "Month"
-        ? date.toLocaleDateString("zh-CN", { month: "long", year: "numeric" })
-        : `${new Date(date.getFullYear(), date.getMonth(), date.getDate() - 6).toLocaleDateString("zh-CN", { day: "numeric", month: "short" })} — ${date.toLocaleDateString("zh-CN", { day: "numeric", month: "short" })}`;
+        ? date.toLocaleDateString("en-GB", { month: "long", year: "numeric" })
+        : `${new Date(date.getFullYear(), date.getMonth(), date.getDate() - 6).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} — ${date.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
   return (
     <section className="collection">
       <div className="collection-intro">
-        <span className="eyebrow">往日心事保管处</span>
-        <h1>来翻翻，旧心情。</h1>
-        <p>{moments.length} 张黑胶。有些日子，一放就想起来。</p>
+        <span className="eyebrow">THE LOST-AND-FOUND OF FEELINGS</span>
+        <h1>Old feelings. Good company.</h1>
+        <p>
+          {moments.length} records. Some days come back with the first note.
+        </p>
       </div>
-      <div className="period-tabs" role="group" aria-label="浏览时间范围">
+      <div className="period-tabs" role="group" aria-label="Browse by period">
         {(["Week", "Month", "Year"] as const).map((x) => (
           <button
             key={periodNames[x]}
@@ -86,14 +88,14 @@ export function Collection({
       </div>
       <div className="period-heading">
         <button
-          aria-label={`上一${periodNames[mode]}`}
+          aria-label={`Previous ${periodNames[mode]}`}
           onClick={() => shift(-1)}
         >
           <ChevronLeft size={18} />
         </button>
         <h2>{heading}</h2>
         <button
-          aria-label={`下一${periodNames[mode]}`}
+          aria-label={`Next ${periodNames[mode]}`}
           onClick={() => shift(1)}
         >
           <ChevronRight size={18} />
@@ -102,10 +104,10 @@ export function Collection({
       {mode === "Month" && (
         <div className="layout-switch">
           <button aria-pressed={!grid} onClick={() => setGrid(false)}>
-            <Library size={14} /> 唱片架
+            <Library size={14} /> Shelf
           </button>
           <button aria-pressed={grid} onClick={() => setGrid(true)}>
-            <Grid2X2 size={14} /> 平铺
+            <Grid2X2 size={14} /> Grid
           </button>
         </div>
       )}
@@ -142,15 +144,15 @@ export function Collection({
                           }}
                         />
                       ))}
-                      {!entries.length && <span>这页，先留白</span>}
+                      {!entries.length && <span>Room for a new memory</span>}
                     </div>
                     <div>
                       <strong>
-                        {new Date(2000, month).toLocaleDateString("zh-CN", {
+                        {new Date(2000, month).toLocaleDateString("en-GB", {
                           month: "long",
                         })}
                       </strong>
-                      <small>{entries.length} 张黑胶</small>
+                      <small>{entries.length} records</small>
                     </div>
                   </button>
                 );
@@ -159,16 +161,16 @@ export function Collection({
           ) : !filtered.length ? (
             <div className="empty">
               <span>○</span>
-              <h2>这里还没开张。</h2>
-              <p>也许忙着过日子，忘了给回忆留个座。</p>
-              <button onClick={() => setDate(new Date())}>回到今天</button>
+              <h2>Nothing on this shelf. Yet.</h2>
+              <p>Perhaps you were too busy living to leave a note.</p>
+              <button onClick={() => setDate(new Date())}>Back to today</button>
             </div>
           ) : mode === "Month" && !grid ? (
             <>
               <p className="shelf-hint">
-                今天想重逢哪一个自己？
+                Which version of you shall we meet today?
                 <br />
-                抽一张，听听那天的内心独白。
+                Pull out a record. There is a story on the other side.
               </p>
               <div className="shelf-scroll">
                 <div className="vinyl-shelf">
@@ -176,7 +178,7 @@ export function Collection({
                     <button
                       className="spine"
                       key={m.id}
-                      aria-label={`抽出 ${m.title || m.song.title}`}
+                      aria-label={`Pull out ${m.title || m.song.title}`}
                       onClick={(e) => pull(m, e.currentTarget)}
                       style={{
                         backgroundColor: [
@@ -207,8 +209,8 @@ export function Collection({
                 </div>
               </div>
               <p className="footnote">
-                {filtered.length} 张私人黑胶 ·{" "}
-                {date.toLocaleDateString("zh-CN", { month: "long" })}
+                {filtered.length} private records ·{" "}
+                {date.toLocaleDateString("en-GB", { month: "long" })}
               </p>
             </>
           ) : (
@@ -229,7 +231,7 @@ export function Collection({
                   <Sleeve moment={m} />
                   <div className="item-caption">
                     <span>
-                      {new Date(m.createdAt).toLocaleDateString("zh-CN", {
+                      {new Date(m.createdAt).toLocaleDateString("en-GB", {
                         day: "2-digit",
                         month: "short",
                       })}
@@ -254,7 +256,7 @@ export function Collection({
               className="inspection"
               role="dialog"
               aria-modal="true"
-              aria-label="抽出的黑胶"
+              aria-label="Selected vinyl"
               initial={{ ...origin, rotate: -5, scale: 0.15 }}
               animate={{ x: 0, y: 0, rotate: 0, scale: 1 }}
               exit={{ ...origin, rotate: 0, scale: 0.12, opacity: 0 }}
@@ -293,10 +295,10 @@ export function Collection({
                     }, 550);
                   }}
                 >
-                  打开 <span>↗</span>
+                  Open <span>↗</span>
                 </button>
                 <button className="put-back" onClick={putBack}>
-                  放回去
+                  Put it back
                 </button>
               </div>
             </motion.section>

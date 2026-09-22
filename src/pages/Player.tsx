@@ -41,8 +41,8 @@ export function Player({
     <main className="player">
       <header className="player-top">
         <Disc3 size={20} />
-        <span>正在播放</span>
-        <span className="small">演示</span>
+        <span>Now playing</span>
+        <span className="small">DEMO</span>
       </header>
       <div className="album">
         <img src={song.artwork} alt={`${song.album} by ${song.artist}`} />
@@ -59,14 +59,14 @@ export function Player({
         <button
           className="rambling-entry"
           onClick={enter}
-          aria-label="打开 Rambling"
+          aria-label="Open Rambling"
         >
           <Disc3 size={16} /> Rambling <span>↗</span>
         </button>
       </div>
       <div className="progress">
         <input
-          aria-label="播放进度"
+          aria-label="Playback position"
           type="range"
           min="0"
           max={song.duration}
@@ -80,19 +80,19 @@ export function Player({
       </div>
       <div className="playback">
         <button
-          aria-label="随机播放"
+          aria-label="Shuffle"
           aria-pressed={shuffle}
           onClick={setShuffle}
           className={shuffle ? "active" : ""}
         >
           <Shuffle size={20} />
         </button>
-        <button aria-label="上一首" onClick={() => next(-1)}>
+        <button aria-label="Previous track" onClick={() => next(-1)}>
           <SkipBack fill="currentColor" />
         </button>
         <button
           className="play-main"
-          aria-label={playing ? "暂停" : "播放"}
+          aria-label={playing ? "Pause" : "Play"}
           onClick={toggle}
         >
           {playing ? (
@@ -101,11 +101,11 @@ export function Player({
             <Play fill="currentColor" />
           )}
         </button>
-        <button aria-label="下一首" onClick={() => next(1)}>
+        <button aria-label="Next track" onClick={() => next(1)}>
           <SkipForward fill="currentColor" />
         </button>
         <button
-          aria-label="单曲循环"
+          aria-label="Repeat track"
           aria-pressed={repeat}
           className={repeat ? "active" : ""}
           onClick={setRepeat}
@@ -114,9 +114,9 @@ export function Player({
         </button>
       </div>
       <div className="player-bottom">
-        <span className="small">外面的事，等这首听完再说。</span>
+        <span className="small">The world can wait until the last note.</span>
       </div>
-      <p className="demo-note">虚构曲目 · 模拟播放</p>
+      <p className="demo-note">Fictional tracks · Simulated playback</p>
     </main>
   );
 }

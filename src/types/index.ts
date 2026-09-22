@@ -24,6 +24,7 @@ export type DiaryBlock =
   | { id: string; type: "image"; src: string }
   | { id: string; type: "sticker"; text: string };
 export type Moment = {
+  document?: RichNode;
   id: string;
   readonly createdAt: string;
   readonly song: Song;
@@ -38,4 +39,11 @@ export type Moment = {
   sleeveImage?: string;
   blocks?: DiaryBlock[];
   liked: boolean;
+};
+export type RichNode = {
+  type: string;
+  text?: string;
+  attrs?: Record<string, unknown>;
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+  content?: RichNode[];
 };

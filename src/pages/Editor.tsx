@@ -1,22 +1,27 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { diaryExtensions } from "../utils/editorExtensions";
+import {
+  richDocument,
+  withDocument,
+  highlightColors,
+} from "../utils/richDocument";
 import {
   ArrowLeft,
   LockKeyhole,
   ImagePlus,
-  Highlighter,
-  X,
+  Bold,
+  Undo2,
+  Redo2,
+  List,
+  ListOrdered,
+  Eraser,
   Check,
 } from "lucide-react";
-import type { DiaryBlock, Moment, TextBlock } from "../types";
+import type { Moment } from "../types";
 import { moods } from "../data/demo";
 import { DiaryHeader } from "../components/Diary";
 import { Sleeve } from "../components/Vinyl";
-import {
-  documentBlocks,
-  insertBlock,
-  splitTextBlock,
-  withBlocks,
-} from "../utils/document";
 import { localImage } from "../utils/images";
 
 export function Editor({
@@ -28,48 +33,41 @@ export function Editor({
   save: (m: Moment) => boolean;
   cancel: () => void;
 }) {
-  const [m, set] = useState(() => withBlocks(initial, documentBlocks(initial)));
+  const [m, set] = useState(initial);
   const [panel, setPanel] = useState<"diary" | "sleeve">("diary");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [active, setActive] = useState("");
-  const cursor = useRef({ id: "", start: 0, end: 0 });
-  const fields = useRef(new Map<string, HTMLTextAreaElement>());
-  const blocks = m.blocks!;
-  const current = blocks.find((b) => b.id === active && b.type === "text") as
-    | TextBlock
-    | undefined;
   const patch = (p: Partial<Moment>) => set((value) => ({ ...value, ...p }));
-  function changeBlock(id: string, update: Partial<TextBlock>) {
-    set((value) =>
-      withBlocks(
-        value,
-        value.blocks!.map((b) =>
-          b.id === id ? ({ ...b, ...update } as DiaryBlock) : b,
-        ),
-      ),
-    );
-  }
-  function insert(media: DiaryBlock) {
-    set((value) => {
-      const next = insertBlock(
-        value.blocks!,
-        cursor.current.id,
-        cursor.current.start,
-        media,
-      );
-      const following = next[next.findIndex((b) => b.id === media.id) + 1];
-      requestAnimationFrame(() => fields.current.get(following.id)?.focus());
-      return withBlocks(value, next);
-    });
-  }
+  const [, redraw] = useState(0);
+  const editor = useEditor({
+    extensions: diaryExtensions(),
+    content: richDocument(initial),
+    editorProps: {
+      attributes: {
+        class: "notes-document",
+        role: "textbox",
+        "aria-label": "Diary body",
+        "aria-multiline": "true",
+        spellcheck: "true",
+      },
+    },
+    onUpdate: ({ editor }) =>
+      set((value) => withDocument(value, editor.getJSON(), editor.getText())),
+    onTransaction: () => redraw((value) => value + 1),
+  });
   async function image(file: File | undefined, cover = false) {
     if (!file) return;
     setBusy(true);
     try {
       const src = await localImage(file);
       if (cover) patch({ sleeveImage: src });
-      else insert({ id: crypto.randomUUID(), type: "image", src });
+      else
+        editor
+          ?.chain()
+          .focus()
+          .setImage({ src, alt: "A photograph from this moment" })
+          .createParagraphNear()
+          .run();
       setError("");
     } catch (e) {
       setError((e as Error).message);
@@ -77,23 +75,21 @@ export function Editor({
       setBusy(false);
     }
   }
-  function remember(el: HTMLTextAreaElement, id: string) {
-    setActive(id);
-    cursor.current = { id, start: el.selectionStart, end: el.selectionEnd };
-  }
   function submit() {
-    if (!save(m))
-      setError("本地空间不足或暂时不可用。草稿还在，请移除部分图片后再保存。");
+    if (!save(editor ? withDocument(m, editor.getJSON(), editor.getText()) : m))
+      setError(
+        "Storage is full or unavailable. Your draft is still here; try removing a photo before saving.",
+      );
   }
   return (
     <main className="editor">
       <header className="page-top">
-        <button aria-label="取消编辑" onClick={cancel}>
+        <button aria-label="Cancel editing" onClick={cancel}>
           <ArrowLeft />
         </button>
-        <span>{initial.body ? "编辑此刻" : "记录此刻"}</span>
+        <span>{initial.body ? "Edit moment" : "Create a moment"}</span>
         <button className="text-button" onClick={submit} disabled={busy}>
-          保存 <Check size={16} />
+          Save <Check size={16} />
         </button>
       </header>
       <div className="locked-song">
@@ -103,225 +99,152 @@ export function Editor({
           <span>{m.song.artist}</span>
         </div>
         <LockKeyhole size={14} />
-        <small>已锁定 · 循环</small>
+        <small>LOCKED · ON REPEAT</small>
       </div>
       <div className="tabs">
         <button
           className={panel === "diary" ? "selected" : ""}
           onClick={() => setPanel("diary")}
         >
-          写日记
+          The diary
         </button>
         <button
           className={panel === "sleeve" ? "selected" : ""}
           onClick={() => setPanel("sleeve")}
         >
-          设计封套
+          The sleeve
         </button>
       </div>
-      {panel === "diary" ? (
-        <>
-          <div className="editor-tools flow-toolbar">
-            <select
-              aria-label="文字层级"
-              value={current?.style || "body"}
-              onChange={(e) => {
-                const id =
-                  current?.id || blocks.find((b) => b.type === "text")!.id;
-                changeBlock(id, {
-                  style: e.target.value as TextBlock["style"],
-                });
-                fields.current.get(id)?.focus();
-              }}
+      {
+        <div hidden={panel !== "diary"}>
+          <div
+            className="editor-tools notes-toolbar"
+            role="toolbar"
+            aria-label="Text formatting"
+          >
+            <div className="format-actions">
+              <button
+                aria-label="Bold"
+                title="Bold (Ctrl / ⌘ B)"
+                aria-pressed={editor?.isActive("bold") || false}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor?.chain().focus().toggleBold().run()}
+              >
+                <Bold size={18} />
+              </button>
+              <button
+                aria-label="Bullet list"
+                aria-pressed={editor?.isActive("bulletList") || false}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor?.chain().focus().toggleBulletList().run()}
+              >
+                <List size={18} />
+              </button>
+              <button
+                aria-label="Numbered list"
+                aria-pressed={editor?.isActive("orderedList") || false}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() =>
+                  editor?.chain().focus().toggleOrderedList().run()
+                }
+              >
+                <ListOrdered size={18} />
+              </button>
+              <button
+                aria-label="Undo"
+                disabled={!editor?.can().undo()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor?.chain().focus().undo().run()}
+              >
+                <Undo2 size={18} />
+              </button>
+              <button
+                aria-label="Redo"
+                disabled={!editor?.can().redo()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor?.chain().focus().redo().run()}
+              >
+                <Redo2 size={18} />
+              </button>
+              <label className="icon-upload" title="Insert photo at cursor">
+                <ImagePlus size={18} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  aria-label="Insert diary photo"
+                  disabled={busy}
+                  onChange={(e) => {
+                    void image(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+            <div
+              className="marker-colors"
+              role="group"
+              aria-label="Highlighter colors"
             >
-              <option value="heading">标题</option>
-              <option value="subheading">副标题</option>
-              <option value="body">正文</option>
-            </select>
-            <select
-              aria-label="日记字体"
-              value={m.font}
-              onChange={(e) =>
-                patch({ font: e.target.value as Moment["font"] })
-              }
-            >
-              <option value="serif">宋体</option>
-              <option value="sans">黑体</option>
-              <option value="hand">手写</option>
-            </select>
-            <button
-              aria-label="高亮选中文字"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                const { id, start, end } = cursor.current;
-                const block = blocks.find((b) => b.id === id) as
-                  | TextBlock
-                  | undefined;
-                if (block && end > start) {
-                  changeBlock(id, { highlight: block.text.slice(start, end) });
-                  setError("");
-                } else setError("先选中一段文字，再轻点高亮。");
-              }}
-            >
-              <Highlighter size={18} />
-            </button>
-            <label className="icon-upload">
-              <ImagePlus size={18} />
-              <input
-                type="file"
-                accept="image/*"
-                aria-label="插入日记图片"
-                disabled={busy}
-                onChange={(e) => {
-                  void image(e.target.files?.[0]);
-                  e.target.value = "";
-                }}
-              />
-            </label>
+              <span>Highlight</span>
+              {highlightColors.map(({ name, color }) => (
+                <button
+                  key={name}
+                  aria-label={`${name} highlight`}
+                  title={name}
+                  aria-pressed={
+                    editor?.isActive("highlight", { color }) || false
+                  }
+                  style={{ "--marker": color } as React.CSSProperties}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() =>
+                    editor?.chain().focus().setHighlight({ color }).run()
+                  }
+                />
+              ))}
+              <button
+                className="clear-marker"
+                aria-label="Remove highlight"
+                title="Remove highlight"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => editor?.chain().focus().unsetHighlight().run()}
+              >
+                <Eraser size={16} />
+              </button>
+            </div>
           </div>
-          <div className={"diary-paper " + m.font}>
+          <div className="diary-paper sans">
             <DiaryHeader date={m.createdAt} />
             <input
               className="title-input"
-              aria-label="日记标题"
-              placeholder="这一集叫什么？（选填）"
+              aria-label="Diary title"
+              placeholder="Give this chapter a name (optional)"
               value={m.title}
               onChange={(e) => patch({ title: e.target.value })}
             />
-            <div className="document-editor">
-              {blocks.map((b, i) =>
-                b.type === "text" ? (
-                  <div key={b.id} className={"text-block block-" + b.style}>
-                    <textarea
-                      rows={1}
-                      ref={(el) => {
-                        if (el) {
-                          fields.current.set(b.id, el);
-                          el.style.height = "auto";
-                          el.style.height =
-                            Math.max(56, el.scrollHeight) + "px";
-                        } else fields.current.delete(b.id);
-                      }}
-                      aria-label={"第" + (i + 1) + "段文字"}
-                      placeholder={
-                        i === 0
-                          ? "不必从头讲。就从脑海里冒出的那一句开始。"
-                          : "后来呢？"
-                      }
-                      value={b.text}
-                      onFocus={(e) => remember(e.currentTarget, b.id)}
-                      onSelect={(e) => remember(e.currentTarget, b.id)}
-                      onKeyDown={(e) => {
-                        if (
-                          e.key === "Enter" &&
-                          !e.shiftKey &&
-                          !e.nativeEvent.isComposing
-                        ) {
-                          e.preventDefault();
-                          const next = splitTextBlock(
-                            blocks,
-                            b.id,
-                            e.currentTarget.selectionStart,
-                            e.currentTarget.selectionEnd,
-                          );
-                          const following =
-                            next[next.findIndex((x) => x.id === b.id) + 1];
-                          set((value) => withBlocks(value, next));
-                          requestAnimationFrame(() =>
-                            fields.current.get(following.id)?.focus(),
-                          );
-                        } else if (
-                          e.key === "Backspace" &&
-                          !b.text &&
-                          i > 0 &&
-                          blocks[i - 1].type === "text"
-                        ) {
-                          e.preventDefault();
-                          const previous = blocks[i - 1];
-                          set((value) =>
-                            withBlocks(
-                              value,
-                              value.blocks!.filter((x) => x.id !== b.id),
-                            ),
-                          );
-                          requestAnimationFrame(() =>
-                            fields.current.get(previous.id)?.focus(),
-                          );
-                        }
-                      }}
-                      onChange={(e) => {
-                        changeBlock(b.id, { text: e.target.value });
-                        remember(e.currentTarget, b.id);
-                      }}
-                    />
-                    {b.highlight && b.text.includes(b.highlight) && (
-                      <div className="highlight-preview">
-                        <mark>{b.highlight}</mark>
-                        <button
-                          aria-label="移除高亮"
-                          onClick={() => changeBlock(b.id, { highlight: "" })}
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div
-                    key={b.id}
-                    className={
-                      b.type === "image" ? "photo-edit" : "flow-sticker"
-                    }
-                  >
-                    {b.type === "image" ? (
-                      <img src={b.src} alt="日记图片" />
-                    ) : (
-                      <span>{b.text}</span>
-                    )}
-                    <button
-                      aria-label={b.type === "image" ? "移除图片" : "移除装饰"}
-                      onClick={() =>
-                        set((value) =>
-                          withBlocks(
-                            value,
-                            value.blocks!.filter((x) => x.id !== b.id),
-                          ),
-                        )
-                      }
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ),
-              )}
-            </div>
+            <EditorContent editor={editor} />
           </div>
           <div className="decoration-tools">
-            <span className="small">给心事盖个小印章</span>
+            <span className="small">A little finishing touch</span>
             <div>
               {["✺", "♡", "✿", "☾", "〰"].map((s) => (
                 <button
                   key={s}
-                  aria-label={"插入" + s + "装饰"}
-                  onClick={() =>
-                    insert({
-                      id: crypto.randomUUID(),
-                      type: "sticker",
-                      text: s,
-                    })
-                  }
+                  aria-label={"Insert " + s + " decoration"}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => editor?.chain().focus().insertContent(s).run()}
                 >
                   {s}
                 </button>
               ))}
             </div>
           </div>
-        </>
-      ) : (
-        <div className="sleeve-editor">
+        </div>
+      }
+      {
+        <div className="sleeve-editor" hidden={panel !== "sleeve"}>
           <Sleeve moment={m} />
-          <h2>心事，也要有封面。</h2>
-          <p>穿哪件外套，由这一刻的你决定。</p>
+          <h2>Even a feeling needs a cover.</h2>
+          <p>Pick the jacket that feels like today.</p>
           <div className="tabs">
             {(["original", "paper", "ink"] as const).map((s) => (
               <button
@@ -329,17 +252,17 @@ export function Editor({
                 className={m.sleeve === s && !m.sleeveImage ? "selected" : ""}
                 onClick={() => patch({ sleeve: s, sleeveImage: undefined })}
               >
-                {s === "original" ? "专辑" : s === "paper" ? "纸感" : "墨色"}
+                {s === "original" ? "Album" : s === "paper" ? "Paper" : "Ink"}
               </button>
             ))}
           </div>
           <label className="cover-upload">
             <ImagePlus size={18} />
-            {m.sleeveImage ? "更换封面图片" : "从相册选择"}
+            {m.sleeveImage ? "Change cover photo" : "Choose a photo"}
             <input
               type="file"
               accept="image/*"
-              aria-label="选择封套图片"
+              aria-label="Choose sleeve photo"
               disabled={busy}
               onChange={(e) => {
                 void image(e.target.files?.[0], true);
@@ -347,12 +270,16 @@ export function Editor({
               }}
             />
           </label>
-          {m.sleeveImage && <p>已居中裁切为方形 · 点选上方样式可恢复</p>}
+          {m.sleeveImage && (
+            <p>
+              Cropped to a square · Choose a style above to restore the original
+            </p>
+          )}
         </div>
-      )}
+      }
       <section className="mood-picker face-picker">
         <h3>
-          记录心情 <span>今天的内心天气</span>
+          Mood <span>Your inner weather report</span>
         </h3>
         <div className="mood-faces">
           {moods.map((mood) => (
@@ -373,11 +300,11 @@ export function Editor({
         </div>
         {m.mood && (
           <label className="mood-label">
-            再加一句自己的旁白
+            Put it in your own words
             <input
-              aria-label="心情文字"
+              aria-label="Mood label"
               maxLength={40}
-              placeholder="比如：累但开心，有点想家……"
+              placeholder="A good kind of tired. A little homesick…"
               value={m.mood.label}
               onChange={(e) =>
                 patch({ mood: { ...m.mood!, label: e.target.value } })
@@ -390,12 +317,12 @@ export function Editor({
           aria-pressed={!m.mood}
           onClick={() => patch({ mood: undefined })}
         >
-          今天就不贴标签了
+          No label today
         </button>
       </section>
       {busy && (
         <p className="footnote" role="status">
-          正在整理图片……
+          Getting your photo ready…
         </p>
       )}
       {error && (
@@ -404,9 +331,9 @@ export function Editor({
         </p>
       )}
       <button className="primary save-bottom" disabled={busy} onClick={submit}>
-        把此刻，刻进黑胶 <span>↗</span>
+        Press this moment into vinyl <span>↗</span>
       </button>
-      <p className="footnote">存在这台设备里。没有观众，只有你。</p>
+      <p className="footnote">Only on this device. No audience. Just you.</p>
     </main>
   );
 }
