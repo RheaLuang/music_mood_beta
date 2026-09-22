@@ -34,15 +34,13 @@ export const songs: Song[] = [
   },
 ];
 export const moods: Mood[] = [
-  { emoji: "🫧", label: "Calm", color: "#a6bec5" },
-  { emoji: "🌙", label: "Nostalgic", color: "#b7acc6" },
-  { emoji: "☀️", label: "Warm", color: "#dfb364" },
-  { emoji: "🌧", label: "Melancholy", color: "#a5adb5" },
-  { emoji: "🌱", label: "Hopeful", color: "#b0bc92" },
-  { emoji: "⚡", label: "Restless", color: "#d5a08b" },
-  { emoji: "🫠", label: "Overwhelmed", color: "#c6a69d" },
+  { level: 1, emoji: "😄", label: "很开心", color: "#d3a456" },
+  { level: 2, emoji: "🙂", label: "开心", color: "#c7b878" },
+  { level: 3, emoji: "😐", label: "平静", color: "#a9b6a2" },
+  { level: 4, emoji: "🙁", label: "低落", color: "#91a8b1" },
+  { level: 5, emoji: "😞", label: "很难过", color: "#8391a7" },
 ];
-const fragments = [
+const legacyFragments = [
   [
     "The long way home",
     "I missed my stop on purpose. There was still a little light left on the water, and this song made the whole bus feel like a room of its own.\n\nFor once, being late felt like getting something back.",
@@ -76,6 +74,73 @@ const fragments = [
     "I did less than I planned. Made dinner anyway. Opened the window. Let a good song count as something good.",
   ],
 ];
+const fragments = [
+  [
+    "绕远一点回家",
+    "我故意坐过了一站。水面还留着一点光，这首歌让整辆公交车像一个只属于自己的房间。\n\n原来偶尔迟到，也像是把什么东西找了回来。",
+  ],
+  [
+    "",
+    "看着厨房窗外的树，咖啡不知不觉凉了。今天没发生什么特别的事。想了想，这也许正是我需要的一天。",
+  ],
+  [
+    "春天快到了",
+    "今早的空气有一点不一样。我敞着外套，打给了一个念叨了很久却一直没联系的朋友。\n\n有些开始，真的很轻。",
+  ],
+  [
+    "两个人的一张桌",
+    "我们坐到店员开始收椅子。已经记不清聊了什么，只记得，那天我一次也没有看手机。",
+  ],
+  [
+    "在离开之前",
+    "地上放着收拾到一半的行李，耳边是几年前听过的歌。明明期待着出发，今晚却已经开始想念这里。",
+  ],
+  [
+    "",
+    "摘下耳机走了一会儿，到桥边才又放起这首歌。像是整座城市，都在等这一段副歌。",
+  ],
+  [
+    "把这种感觉留下",
+    "下午好像变得很长。我们买了桃子，坐在台阶上，什么计划也没有。想记住这种轻松。",
+  ],
+  [
+    "温柔一点的一天",
+    "做的事比计划少一些，但还是认真做了晚饭。打开窗，让一首好听的歌，也算今天的一件好事。",
+  ],
+];
+export function localizeStoredMoment(m: Moment): Moment {
+  let next = m;
+  if (m.id.startsWith("demo-")) {
+    const i = legacyFragments.findIndex(([, body]) => body === m.body);
+    if (i >= 0 && !m.blocks)
+      next = {
+        ...m,
+        body: fragments[i][1],
+        title: m.title === legacyFragments[i][0] ? fragments[i][0] : m.title,
+        highlight: m.highlight ? "把什么东西找了回来" : "",
+      };
+  }
+  if (next.mood && !next.mood.level) {
+    const old: Record<string, number> = {
+      Calm: 2,
+      Nostalgic: 3,
+      Warm: 1,
+      Melancholy: 4,
+      Hopeful: 1,
+      Restless: 3,
+      Overwhelmed: 4,
+    };
+    const idx = old[next.mood.label];
+    next = {
+      ...next,
+      mood: {
+        ...moods[idx ?? 2],
+        label: idx === undefined ? next.mood.label : moods[idx].label,
+      },
+    };
+  }
+  return next;
+}
 export function seedMoments(now = new Date()): Moment[] {
   return Array.from({ length: 18 }, (_, i) => {
     const d = new Date(now);
@@ -92,10 +157,9 @@ export function seedMoments(now = new Date()): Moment[] {
       song: songs[i % 4],
       title,
       body,
-      mood: i % 5 === 1 ? undefined : moods[i % 7],
+      mood: i % 5 === 1 ? undefined : moods[i % 5],
       font: i % 3 === 0 ? "serif" : "sans",
-      highlight:
-        i % 4 === 0 ? "being late felt like getting something back" : "",
+      highlight: i % 4 === 0 ? "把什么东西找了回来" : "",
       photos: i % 6 === 0 ? ["artwork/sea.jpg"] : [],
       stickers: i % 4 === 0 ? ["✺"] : [],
       sleeve: i % 3 === 0 ? "paper" : i % 4 === 0 ? "ink" : "original",

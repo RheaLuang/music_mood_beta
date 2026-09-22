@@ -1,4 +1,4 @@
-import type { Moment, Song } from "../types";
+import type { DiaryBlock, Moment, Song } from "../types";
 export const STORAGE_KEY = "rambling.moments.v1";
 export function createMoment(song: Song): Moment {
   return {
@@ -24,6 +24,19 @@ export function upsertMoment(items: Moment[], draft: Moment): Moment[] {
     b.createdAt.localeCompare(a.createdAt),
   );
 }
+function validBlock(value: unknown): value is DiaryBlock {
+  if (!value || typeof value !== "object") return false;
+  const block = value as Record<string, unknown>;
+  if (typeof block.id !== "string") return false;
+  if (block.type === "image") return typeof block.src === "string";
+  if (block.type === "sticker") return typeof block.text === "string";
+  return (
+    block.type === "text" &&
+    typeof block.text === "string" &&
+    ["heading", "subheading", "body"].includes(String(block.style)) &&
+    (block.highlight === undefined || typeof block.highlight === "string")
+  );
+}
 export function validMoments(value: unknown): value is Moment[] {
   return (
     Array.isArray(value) &&
@@ -40,6 +53,9 @@ export function validMoments(value: unknown): value is Moment[] {
         typeof m.highlight === "string" &&
         ["serif", "sans", "hand"].includes(m.font) &&
         ["original", "paper", "ink"].includes(m.sleeve) &&
+        (m.sleeveImage === undefined || typeof m.sleeveImage === "string") &&
+        (m.blocks === undefined ||
+          (Array.isArray(m.blocks) && m.blocks.every(validBlock))) &&
         Array.isArray(m.photos) &&
         m.photos.every((p: unknown) => typeof p === "string") &&
         Array.isArray(m.stickers) &&
@@ -47,7 +63,9 @@ export function validMoments(value: unknown): value is Moment[] {
         (!m.mood ||
           (typeof m.mood.label === "string" &&
             typeof m.mood.emoji === "string" &&
-            typeof m.mood.color === "string")),
+            typeof m.mood.color === "string" &&
+            (m.mood.level === undefined ||
+              [1, 2, 3, 4, 5].includes(m.mood.level)))),
     )
   );
 }

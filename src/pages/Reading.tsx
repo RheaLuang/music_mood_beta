@@ -20,11 +20,11 @@ export function Reading({
   return (
     <main className="reading">
       <header className="page-top">
-        <button aria-label="Back to My Vinyls" onClick={back}>
+        <button aria-label="返回我的黑胶" onClick={back}>
           <ArrowLeft />
         </button>
-        <span>MEMORY, ON REPEAT</span>
-        <button aria-label="Edit moment" onClick={edit}>
+        <span>让回忆，再放一遍</span>
+        <button aria-label="编辑日记" onClick={edit}>
           <Pencil size={18} />
         </button>
       </header>
@@ -32,14 +32,14 @@ export function Reading({
         <Record song={m.song} playing={playing} />
         <div className="reading-controls">
           <button
-            aria-label={m.liked ? "Unfavorite moment" : "Favorite moment"}
+            aria-label={m.liked ? "取消收藏" : "收藏此刻"}
             aria-pressed={m.liked}
             onClick={like}
           >
             <Heart size={20} fill={m.liked ? "currentColor" : "none"} />
           </button>
           <button
-            aria-label={playing ? "Pause record" : "Play record"}
+            aria-label={playing ? "暂停唱片" : "播放唱片"}
             onClick={toggle}
           >
             {playing ? (
@@ -64,8 +64,8 @@ export function Reading({
         <DiaryContent moment={m} />
         <footer className="diary-end">
           <span>✳</span>
-          <p>A song ends. A moment stays.</p>
-          <small>RAMBLING · PERSONAL PRESSING</small>
+          <p>歌会结束，此刻会留下。</p>
+          <small>RAMBLING · 私人珍藏</small>
         </footer>
       </article>
     </main>

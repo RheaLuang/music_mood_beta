@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MotionConfig } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, Disc3 } from "lucide-react";
-import { songs, seedMoments } from "./data/demo";
+import { songs, seedMoments, localizeStoredMoment } from "./data/demo";
 import type { Moment } from "./types";
 import {
   createMoment,
@@ -26,7 +26,9 @@ export default function App() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const data = raw ? JSON.parse(raw) : null;
-      return validMoments(data) ? data : seedMoments();
+      return validMoments(data)
+        ? data.map(localizeStoredMoment)
+        : seedMoments();
     } catch {
       return seedMoments();
     }
@@ -118,7 +120,7 @@ export default function App() {
     setDraft(null);
     setTab(1);
     go("home");
-    setToast("Your moment has been pressed.");
+    setToast("此刻，已刻进黑胶。");
     return true;
   }
   function open(m: Moment) {
@@ -150,17 +152,16 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="desktop-note">
-        <span className="brand">
-          rambling
-        </span>
+        <span className="brand">rambling</span>
         <p>
-          A record of feeling.
-          <br />A place to return to.
+          把心情，刻成唱片。
+          <br />
+          留一个可以回来的地方。
         </p>
         <span className="desktop-bottom">
-          VOLUME 01
+          第一辑
           <br />
-          MUSIC → MOMENT → MEMORY
+          音乐 → 此刻 → 回忆
         </span>
       </div>
       <div className="app-shell">
@@ -218,13 +219,13 @@ export default function App() {
                   upsertMoment(moments, { ...current, liked: !current.liked }),
                 )
               )
-                setToast("Could not save this change to your browser.");
+                setToast("暂时无法保存，请稍后重试。");
             }}
           />
         ) : (
           <main className="home">
             <header className="page-top">
-              <button aria-label="Back to player" onClick={() => go("player")}>
+              <button aria-label="返回播放器" onClick={() => go("player")}>
                 <ArrowLeft />
               </button>
               <span className="wordmark">rambling</span>
@@ -235,13 +236,13 @@ export default function App() {
                 className={tab === 0 ? "selected" : ""}
                 onClick={() => switchTab(0)}
               >
-                Create your vinyl
+                制作黑胶
               </button>
               <button
                 className={tab === 1 ? "selected" : ""}
                 onClick={() => switchTab(1)}
               >
-                My vinyls <small>{moments.length}</small>
+                我的黑胶 <small>{moments.length}</small>
               </button>
             </div>
             <div
@@ -255,17 +256,17 @@ export default function App() {
             >
               <section className="create-page">
                 <div className="create-heading">
-                  <span className="eyebrow">SOME SONGS BECOME PLACES.</span>
+                  <span className="eyebrow">有些歌，会成为一个地方。</span>
                   <h1>
-                    Keep a little
+                    留住一点
                     <br />
-                    of <em>right now.</em>
+                    <em>此时此刻。</em>
                   </h1>
-                  <p>What does this song feel like today?</p>
+                  <p>今天，这首歌带给你什么感觉？</p>
                 </div>
                 <button
                   className="create-art"
-                  aria-label="Create moment"
+                  aria-label="记录此刻"
                   onClick={() => {
                     setDraft(createMoment(song));
                     setRepeat(true);
@@ -277,28 +278,28 @@ export default function App() {
                     <small>
                       RAMBLING
                       <br />
-                      PERSONAL PRESSING
+                      私人珍藏
                     </small>
                     <span className="handwritten">
-                      this feeling,
+                      把这份心情，
                       <br />
-                      on record.
+                      留在唱片里。
                     </span>
                     <span className="sleeve-star">✳</span>
                     <div className="sleeve-rule">
-                      SIDE A <span>YOUR MOMENT</span>
+                      A 面 <span>你的此刻</span>
                     </div>
                   </div>
                   <div className="paper-ticket">
-                    ONE SONG
+                    一首歌
                     <br />
-                    ONE LITTLE LIFE
+                    一小段生活
                   </div>
                 </button>
                 <div className="current-soundtrack">
                   <img src={song.artwork} alt="" />
                   <div>
-                    <small>YOUR SOUNDTRACK, RIGHT NOW</small>
+                    <small>此刻，正在听</small>
                     <strong>{song.title}</strong>
                     <span>{song.artist}</span>
                   </div>
@@ -316,10 +317,10 @@ export default function App() {
                     go("edit");
                   }}
                 >
-                  Create a moment <ArrowUpRight size={20} />
+                  记录此刻 <ArrowUpRight size={20} />
                 </button>
                 <p className="footnote">
-                  A few words. A feeling. A record to keep.
+                  几句话，一种心情，一张留给自己的唱片。
                 </p>
               </section>
               <section className="collection-page">
@@ -335,15 +336,15 @@ export default function App() {
         )}
       </div>
       <div className="desktop-caption">
-        <span>LISTEN CLOSELY.</span>
+        <span>静静听。</span>
         <p>
-          Somewhere between
-          <br />a song and a memory.
+          在一首歌
+          <br />
+          和一段回忆之间。
         </p>
         <div className="tiny-record">◉</div>
-        <span>YOUR OWN LITTLE ARCHIVE</span>
+        <span>你的私人唱片柜</span>
       </div>
     </MotionConfig>
   );
 }
-

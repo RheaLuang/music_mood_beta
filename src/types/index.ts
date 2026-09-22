@@ -6,7 +6,23 @@ export type Song = {
   artwork: string;
   duration: number;
 };
-export type Mood = { emoji: string; label: string; color: string };
+export type Mood = {
+  level?: 1 | 2 | 3 | 4 | 5;
+  emoji: string;
+  label: string;
+  color: string;
+};
+export type TextBlock = {
+  id: string;
+  type: "text";
+  text: string;
+  style: "heading" | "subheading" | "body";
+  highlight?: string;
+};
+export type DiaryBlock =
+  | TextBlock
+  | { id: string; type: "image"; src: string }
+  | { id: string; type: "sticker"; text: string };
 export type Moment = {
   id: string;
   readonly createdAt: string;
@@ -19,5 +35,7 @@ export type Moment = {
   photos: string[];
   stickers: string[];
   sleeve: "original" | "paper" | "ink";
+  sleeveImage?: string;
+  blocks?: DiaryBlock[];
   liked: boolean;
 };

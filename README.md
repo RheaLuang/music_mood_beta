@@ -19,16 +19,18 @@ npm run preview
 
 ## Demo journey
 
-1. Open Now Playing and choose **Rambling** near the secondary controls.
-2. Swipe between **Create your vinyl** and **My vinyls**, or use the tabs.
+1. Open the player and choose **Rambling** beside the song details.
+2. Swipe between **制作黑胶** and **我的黑胶**, or use the tabs.
 3. Create a Moment. Its song and original timestamp are captured and locked.
-4. Write a diary; optionally add a title, mood, font, photo, sticker, selected-text highlight, or sleeve treatment.
+4. Write a continuous diary with heading, subheading, and body blocks. Insert photos or decorations at the cursor and continue typing below them. Add selected-text highlights, one of five mood faces with your own label, and a sleeve style or local cover image.
 5. Save and find the Moment in My vinyls.
 6. Browse Week, Month (shelf or grid), or the twelve-month Year archive.
 7. Pull out a sleeve, put it back, or open its vinyl to enter Reading Mode.
 8. Pause/resume the rotating record, favorite the Moment, or edit it again.
 
-The fictional tracks use simulated playback. No audio service, backend, authentication, or external music API is used. Eighteen fictional Moments are seeded relative to the first visit. Artwork and fonts are bundled locally. Uploaded photos remain on the device and are limited to 2 MB each. Browser localStorage persists saved Moments; clearing site data removes them. Storage errors keep the editor draft available and show a retry message.
+The fictional tracks use simulated playback. No audio service, backend, authentication, or external music API is used. Eighteen fictional Moments are seeded relative to the first visit. The interface, dates, and seeded diaries use Simplified Chinese; song names retain their original language. Artwork and fonts are bundled locally. Uploaded images remain on the device; images up to 25 MB are resized to at most 1200 pixels and compressed before storage. Browser localStorage persists saved Moments; clearing site data removes them. Storage errors keep the editor draft available and show a retry message.
+
+`Moment.blocks` stores ordered text, image, and sticker blocks independently of the editor. Legacy text/photos/stickers still render and are converted when edited. `sleeveImage` affects only the sleeve; the record center always uses the locked song artwork. Existing user-written diaries are preserved during localization.
 
 ## Architecture
 

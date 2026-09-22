@@ -1,13 +1,10 @@
 import {
-  ChevronDown,
-  MoreHorizontal,
   SkipBack,
   SkipForward,
   Play,
   Pause,
   Repeat2,
   Shuffle,
-  ListMusic,
   Disc3,
 } from "lucide-react";
 import type { Song } from "../types";
@@ -44,8 +41,8 @@ export function Player({
     <main className="player">
       <header className="player-top">
         <Disc3 size={20} />
-        <span>NOW PLAYING</span>
-        <span className="small">DEMO</span>
+        <span>正在播放</span>
+        <span className="small">演示</span>
       </header>
       <div className="album">
         <img src={song.artwork} alt={`${song.album} by ${song.artist}`} />
@@ -59,11 +56,17 @@ export function Player({
           <h1>{song.title}</h1>
           <p>{song.artist}</p>
         </div>
-        <span className="track-index">0{Number(song.id.slice(1))}</span>
+        <button
+          className="rambling-entry"
+          onClick={enter}
+          aria-label="打开 Rambling"
+        >
+          <Disc3 size={16} /> Rambling <span>↗</span>
+        </button>
       </div>
       <div className="progress">
         <input
-          aria-label="Playback position"
+          aria-label="播放进度"
           type="range"
           min="0"
           max={song.duration}
@@ -77,19 +80,19 @@ export function Player({
       </div>
       <div className="playback">
         <button
-          aria-label="Shuffle"
+          aria-label="随机播放"
           aria-pressed={shuffle}
           onClick={setShuffle}
           className={shuffle ? "active" : ""}
         >
           <Shuffle size={20} />
         </button>
-        <button aria-label="Previous song" onClick={() => next(-1)}>
+        <button aria-label="上一首" onClick={() => next(-1)}>
           <SkipBack fill="currentColor" />
         </button>
         <button
           className="play-main"
-          aria-label={playing ? "Pause" : "Play"}
+          aria-label={playing ? "暂停" : "播放"}
           onClick={toggle}
         >
           {playing ? (
@@ -98,11 +101,11 @@ export function Player({
             <Play fill="currentColor" />
           )}
         </button>
-        <button aria-label="Next song" onClick={() => next(1)}>
+        <button aria-label="下一首" onClick={() => next(1)}>
           <SkipForward fill="currentColor" />
         </button>
         <button
-          aria-label="Repeat song"
+          aria-label="单曲循环"
           aria-pressed={repeat}
           className={repeat ? "active" : ""}
           onClick={setRepeat}
@@ -111,12 +114,9 @@ export function Player({
         </button>
       </div>
       <div className="player-bottom">
-        <span className="small">A LITTLE SPACE TO LISTEN</span>
-        <button className="rambling-entry" onClick={enter}>
-          <Disc3 size={16} /> Rambling <span>↗</span>
-        </button>
+        <span className="small">留一点空间，听首歌</span>
       </div>
-      <p className="demo-note">Fictional tracks · simulated playback</p>
+      <p className="demo-note">虚构曲目 · 模拟播放</p>
     </main>
   );
 }

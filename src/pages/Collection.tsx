@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Grid2X2, Library } from "lucide-react";
 import type { Moment } from "../types";
@@ -15,6 +15,26 @@ export function Collection({
   const [grid, setGrid] = useState(false);
   const [selected, select] = useState<Moment | null>(null);
   const [reveal, setReveal] = useState(false);
+  const source = useRef<HTMLButtonElement | null>(null);
+  const timer = useRef<number>();
+  const [origin, setOrigin] = useState({ x: 0, y: 100 });
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  function pull(m: Moment, element: HTMLButtonElement) {
+    source.current = element;
+    const rect = element.getBoundingClientRect();
+    setOrigin({
+      x: rect.left + rect.width / 2 - window.innerWidth / 2,
+      y: rect.top + rect.height / 2 - window.innerHeight / 2,
+    });
+    select(m);
+    setReveal(false);
+  }
+  function putBack() {
+    window.clearTimeout(timer.current);
+    select(null);
+    source.current?.focus({ preventScroll: true });
+  }
+  const periodNames = { Week: "周", Month: "月", Year: "年" };
   const filtered = moments.filter((m) => {
     const d = new Date(m.createdAt);
     if (mode === "Year") return d.getFullYear() === date.getFullYear();
@@ -41,39 +61,39 @@ export function Collection({
   }
   const heading =
     mode === "Year"
-      ? String(date.getFullYear())
+      ? date.getFullYear() + "年"
       : mode === "Month"
-        ? date.toLocaleDateString("en", { month: "long", year: "numeric" })
-        : `${new Date(date.getFullYear(), date.getMonth(), date.getDate() - 6).toLocaleDateString("en", { day: "numeric", month: "short" })} — ${date.toLocaleDateString("en", { day: "numeric", month: "short" })}`;
+        ? date.toLocaleDateString("zh-CN", { month: "long", year: "numeric" })
+        : `${new Date(date.getFullYear(), date.getMonth(), date.getDate() - 6).toLocaleDateString("zh-CN", { day: "numeric", month: "short" })} — ${date.toLocaleDateString("zh-CN", { day: "numeric", month: "short" })}`;
   return (
     <section className="collection">
       <div className="collection-intro">
-        <span className="eyebrow">THE PERSONAL PRESSING</span>
-        <h1>A record of feeling.</h1>
-        <p>{moments.length} moments, each with a song to return to.</p>
+        <span className="eyebrow">私人珍藏</span>
+        <h1>心情，有迹可循。</h1>
+        <p>{moments.length} 个瞬间，总有一首歌可以重返。</p>
       </div>
-      <div className="period-tabs" role="group" aria-label="Collection period">
+      <div className="period-tabs" role="group" aria-label="浏览时间范围">
         {(["Week", "Month", "Year"] as const).map((x) => (
           <button
-            key={x}
+            key={periodNames[x]}
             className={mode === x ? "selected" : ""}
             aria-pressed={mode === x}
             onClick={() => setMode(x)}
           >
-            {x}
+            {periodNames[x]}
           </button>
         ))}
       </div>
       <div className="period-heading">
         <button
-          aria-label={`Previous ${mode.toLowerCase()}`}
+          aria-label={`上一${periodNames[mode]}`}
           onClick={() => shift(-1)}
         >
           <ChevronLeft size={18} />
         </button>
         <h2>{heading}</h2>
         <button
-          aria-label={`Next ${mode.toLowerCase()}`}
+          aria-label={`下一${periodNames[mode]}`}
           onClick={() => shift(1)}
         >
           <ChevronRight size={18} />
@@ -82,10 +102,10 @@ export function Collection({
       {mode === "Month" && (
         <div className="layout-switch">
           <button aria-pressed={!grid} onClick={() => setGrid(false)}>
-            <Library size={14} /> Shelf
+            <Library size={14} /> 唱片架
           </button>
           <button aria-pressed={grid} onClick={() => setGrid(true)}>
-            <Grid2X2 size={14} /> Grid
+            <Grid2X2 size={14} /> 平铺
           </button>
         </div>
       )}
@@ -117,18 +137,20 @@ export function Collection({
                       {entries.slice(0, 12).map((m) => (
                         <i
                           key={m.id}
-                          style={{ backgroundImage: `url(${m.song.artwork})` }}
+                          style={{
+                            backgroundImage: `url(${m.sleeveImage || m.song.artwork})`,
+                          }}
                         />
                       ))}
-                      {!entries.length && <span>Still unwritten</span>}
+                      {!entries.length && <span>等待下一段故事</span>}
                     </div>
                     <div>
                       <strong>
-                        {new Date(2000, month).toLocaleDateString("en", {
+                        {new Date(2000, month).toLocaleDateString("zh-CN", {
                           month: "long",
                         })}
                       </strong>
-                      <small>{entries.length} records</small>
+                      <small>{entries.length} 张黑胶</small>
                     </div>
                   </button>
                 );
@@ -137,18 +159,16 @@ export function Collection({
           ) : !filtered.length ? (
             <div className="empty">
               <span>○</span>
-              <h2>A little room for life.</h2>
-              <p>No moments in this {mode.toLowerCase()} yet.</p>
-              <button onClick={() => setDate(new Date())}>
-                Return to today
-              </button>
+              <h2>给生活，留一点空白。</h2>
+              <p>这段时间，还没有留下记录。</p>
+              <button onClick={() => setDate(new Date())}>回到今天</button>
             </div>
           ) : mode === "Month" && !grid ? (
             <>
               <p className="shelf-hint">
-                Run your fingers along the spines.
+                沿着唱片书脊，慢慢翻找。
                 <br />
-                Choose a moment to pull it closer.
+                轻点一张，把那天拉近一点。
               </p>
               <div className="shelf-scroll">
                 <div className="vinyl-shelf">
@@ -156,11 +176,8 @@ export function Collection({
                     <button
                       className="spine"
                       key={m.id}
-                      aria-label={`Pull out ${m.title || m.song.title}`}
-                      onClick={() => {
-                        select(m);
-                        setReveal(false);
-                      }}
+                      aria-label={`抽出 ${m.title || m.song.title}`}
+                      onClick={(e) => pull(m, e.currentTarget)}
                       style={{
                         backgroundColor: [
                           "#b7b7a1",
@@ -190,8 +207,8 @@ export function Collection({
                 </div>
               </div>
               <p className="footnote">
-                {filtered.length} individual pressings ·{" "}
-                {date.toLocaleDateString("en", { month: "long" })}
+                {filtered.length} 张私人黑胶 ·{" "}
+                {date.toLocaleDateString("zh-CN", { month: "long" })}
               </p>
             </>
           ) : (
@@ -207,15 +224,12 @@ export function Collection({
                       "--tilt": `${[-4, 3, 2, -2][i % 4]}deg`,
                     } as React.CSSProperties
                   }
-                  onClick={() => {
-                    select(m);
-                    setReveal(false);
-                  }}
+                  onClick={(e) => pull(m, e.currentTarget)}
                 >
                   <Sleeve moment={m} />
                   <div className="item-caption">
                     <span>
-                      {new Date(m.createdAt).toLocaleDateString("en", {
+                      {new Date(m.createdAt).toLocaleDateString("zh-CN", {
                         day: "2-digit",
                         month: "short",
                       })}
@@ -240,13 +254,13 @@ export function Collection({
               className="inspection"
               role="dialog"
               aria-modal="true"
-              aria-label="Inspect vinyl"
-              initial={{ y: 100, rotate: -5, scale: 0.9 }}
-              animate={{ y: 0, rotate: 0, scale: 1 }}
-              exit={{ y: 160, rotate: 4, scale: 0.65 }}
+              aria-label="抽出的黑胶"
+              initial={{ ...origin, rotate: -5, scale: 0.15 }}
+              animate={{ x: 0, y: 0, rotate: 0, scale: 1 }}
+              exit={{ ...origin, rotate: 0, scale: 0.12, opacity: 0 }}
               transition={{ duration: 0.45 }}
               onKeyDown={(e) => {
-                if (e.key === "Escape") select(null);
+                if (e.key === "Escape") putBack();
                 if (e.key === "Tab") {
                   const buttons = e.currentTarget.querySelectorAll("button");
                   if (e.shiftKey && document.activeElement === buttons[0]) {
@@ -262,32 +276,29 @@ export function Collection({
                 }
               }}
             >
-              <span className="eyebrow">ONE MOMENT. ONE RECORD.</span>
               <div className={`extracted ${reveal ? "reveal" : ""}`}>
                 <Record song={selected.song} />
                 <Sleeve moment={selected} />
               </div>
-              <h2>{selected.title || selected.song.title}</h2>
-              <p>
-                {selected.song.title} · {selected.song.artist}
-              </p>
-              <button
-                autoFocus
-                className="primary"
-                onClick={() => {
-                  if (reveal) return;
-                  setReveal(true);
-                  window.setTimeout(() => {
-                    open(selected);
-                    select(null);
-                  }, 550);
-                }}
-              >
-                Open vinyl <span>↗</span>
-              </button>
-              <button className="put-back" onClick={() => select(null)}>
-                Put it back
-              </button>
+              <div className="inspection-actions">
+                <button
+                  autoFocus
+                  className="primary"
+                  onClick={() => {
+                    if (reveal) return;
+                    setReveal(true);
+                    timer.current = window.setTimeout(() => {
+                      open(selected);
+                      select(null);
+                    }, 550);
+                  }}
+                >
+                  打开 <span>↗</span>
+                </button>
+                <button className="put-back" onClick={putBack}>
+                  放回去
+                </button>
+              </div>
             </motion.section>
           </motion.div>
         )}

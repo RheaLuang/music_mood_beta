@@ -7,10 +7,18 @@ import {
   X,
   Check,
 } from "lucide-react";
-import type { Moment } from "../types";
+import type { DiaryBlock, Moment, TextBlock } from "../types";
 import { moods } from "../data/demo";
 import { DiaryHeader } from "../components/Diary";
 import { Sleeve } from "../components/Vinyl";
+import {
+  documentBlocks,
+  insertBlock,
+  splitTextBlock,
+  withBlocks,
+} from "../utils/document";
+import { localImage } from "../utils/images";
+
 export function Editor({
   initial,
   save,
@@ -20,45 +28,72 @@ export function Editor({
   save: (m: Moment) => boolean;
   cancel: () => void;
 }) {
-  const [m, set] = useState(initial);
+  const [m, set] = useState(() => withBlocks(initial, documentBlocks(initial)));
   const [panel, setPanel] = useState<"diary" | "sleeve">("diary");
   const [error, setError] = useState("");
-  const body = useRef<HTMLTextAreaElement>(null);
-  const patch = (v: Partial<Moment>) => set((x) => ({ ...x, ...v }));
-  async function photo(file?: File) {
+  const [busy, setBusy] = useState(false);
+  const [active, setActive] = useState("");
+  const cursor = useRef({ id: "", start: 0, end: 0 });
+  const fields = useRef(new Map<string, HTMLTextAreaElement>());
+  const blocks = m.blocks!;
+  const current = blocks.find((b) => b.id === active && b.type === "text") as
+    | TextBlock
+    | undefined;
+  const patch = (p: Partial<Moment>) => set((value) => ({ ...value, ...p }));
+  function changeBlock(id: string, update: Partial<TextBlock>) {
+    set((value) =>
+      withBlocks(
+        value,
+        value.blocks!.map((b) =>
+          b.id === id ? ({ ...b, ...update } as DiaryBlock) : b,
+        ),
+      ),
+    );
+  }
+  function insert(media: DiaryBlock) {
+    set((value) => {
+      const next = insertBlock(
+        value.blocks!,
+        cursor.current.id,
+        cursor.current.start,
+        media,
+      );
+      const following = next[next.findIndex((b) => b.id === media.id) + 1];
+      requestAnimationFrame(() => fields.current.get(following.id)?.focus());
+      return withBlocks(value, next);
+    });
+  }
+  async function image(file: File | undefined, cover = false) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Choose an image file.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Choose a photo smaller than 2 MB for this demo.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      patch({ photos: [...m.photos, String(reader.result)] });
+    setBusy(true);
+    try {
+      const src = await localImage(file);
+      if (cover) patch({ sleeveImage: src });
+      else insert({ id: crypto.randomUUID(), type: "image", src });
       setError("");
-    };
-    reader.readAsDataURL(file);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  function remember(el: HTMLTextAreaElement, id: string) {
+    setActive(id);
+    cursor.current = { id, start: el.selectionStart, end: el.selectionEnd };
+  }
+  function submit() {
+    if (!save(m))
+      setError("本地空间不足或暂时不可用。草稿还在，请移除部分图片后再保存。");
   }
   return (
     <main className="editor">
       <header className="page-top">
-        <button aria-label="Cancel editing" onClick={cancel}>
+        <button aria-label="取消编辑" onClick={cancel}>
           <ArrowLeft />
         </button>
-        <span>{initial.body ? "EDIT MOMENT" : "A NEW MOMENT"}</span>
-        <button
-          className="text-button"
-          onClick={() => {
-            if (!save(m))
-              setError(
-                "Your browser storage is full or unavailable. Remove a photo and try again. Your draft is still here.",
-              );
-          }}
-        >
-          Save <Check size={16} />
+        <span>{initial.body ? "编辑此刻" : "记录此刻"}</span>
+        <button className="text-button" onClick={submit} disabled={busy}>
+          保存 <Check size={16} />
         </button>
       </header>
       <div className="locked-song">
@@ -68,130 +103,211 @@ export function Editor({
           <span>{m.song.artist}</span>
         </div>
         <LockKeyhole size={14} />
-        <small>LOCKED · LOOP</small>
+        <small>已锁定 · 循环</small>
       </div>
       <div className="tabs">
         <button
           className={panel === "diary" ? "selected" : ""}
           onClick={() => setPanel("diary")}
         >
-          The diary
+          写日记
         </button>
         <button
           className={panel === "sleeve" ? "selected" : ""}
           onClick={() => setPanel("sleeve")}
         >
-          The sleeve
+          设计封套
         </button>
       </div>
       {panel === "diary" ? (
         <>
-          <div className="editor-tools">
+          <div className="editor-tools flow-toolbar">
             <select
-              aria-label="Diary font"
+              aria-label="文字层级"
+              value={current?.style || "body"}
+              onChange={(e) => {
+                const id =
+                  current?.id || blocks.find((b) => b.type === "text")!.id;
+                changeBlock(id, {
+                  style: e.target.value as TextBlock["style"],
+                });
+                fields.current.get(id)?.focus();
+              }}
+            >
+              <option value="heading">标题</option>
+              <option value="subheading">副标题</option>
+              <option value="body">正文</option>
+            </select>
+            <select
+              aria-label="日记字体"
               value={m.font}
               onChange={(e) =>
                 patch({ font: e.target.value as Moment["font"] })
               }
             >
-              <option value="serif">Editorial serif</option>
-              <option value="sans">Simple sans</option>
-              <option value="hand">Personal script</option>
+              <option value="serif">宋体</option>
+              <option value="sans">黑体</option>
+              <option value="hand">手写</option>
             </select>
             <button
-              aria-label="Highlight selected diary text"
+              aria-label="高亮选中文字"
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
-                const el = body.current;
-                if (el && el.selectionEnd > el.selectionStart) {
-                  patch({
-                    highlight: m.body.slice(el.selectionStart, el.selectionEnd),
-                  });
+                const { id, start, end } = cursor.current;
+                const block = blocks.find((b) => b.id === id) as
+                  | TextBlock
+                  | undefined;
+                if (block && end > start) {
+                  changeBlock(id, { highlight: block.text.slice(start, end) });
                   setError("");
-                } else
-                  setError(
-                    "Select a passage in your diary, then tap highlight.",
-                  );
+                } else setError("先选中一段文字，再轻点高亮。");
               }}
             >
               <Highlighter size={18} />
             </button>
-            <label className="icon-upload" aria-label="Add a photo">
+            <label className="icon-upload">
               <ImagePlus size={18} />
               <input
-                aria-label="Add a photo"
                 type="file"
                 accept="image/*"
+                aria-label="插入日记图片"
+                disabled={busy}
                 onChange={(e) => {
-                  void photo(e.target.files?.[0]);
+                  void image(e.target.files?.[0]);
                   e.target.value = "";
                 }}
               />
             </label>
           </div>
-          <div className={`diary-paper ${m.font}`}>
+          <div className={"diary-paper " + m.font}>
             <DiaryHeader date={m.createdAt} />
             <input
               className="title-input"
-              aria-label="Diary title"
-              placeholder="A title, if you like…"
+              aria-label="日记标题"
+              placeholder="给此刻起个名字（选填）"
               value={m.title}
               onChange={(e) => patch({ title: e.target.value })}
             />
-            <textarea
-              ref={body}
-              className="body-input"
-              aria-label="Diary content"
-              placeholder="What does this song feel like today?"
-              value={m.body}
-              onChange={(e) => patch({ body: e.target.value })}
-            />
-            {m.highlight && (
-              <div className="highlight-preview">
-                <mark>{m.highlight}</mark>
-                <button
-                  aria-label="Remove highlight"
-                  onClick={() => patch({ highlight: "" })}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            )}
-            {m.photos.map((p, i) => (
-              <div className="photo-edit" key={i}>
-                <img src={p} alt="Diary photograph" />
-                <button
-                  aria-label={`Remove photo ${i + 1}`}
-                  onClick={() =>
-                    patch({ photos: m.photos.filter((_, n) => n !== i) })
-                  }
-                >
-                  <X />
-                </button>
-              </div>
-            ))}
-            <div className="sticker-zone">
-              {m.stickers.map((s, i) => (
-                <button
-                  key={i}
-                  title="Remove sticker"
-                  aria-label={`Remove sticker ${i + 1}`}
-                  onClick={() =>
-                    patch({ stickers: m.stickers.filter((_, n) => n !== i) })
-                  }
-                >
-                  {s}
-                </button>
-              ))}
+            <div className="document-editor">
+              {blocks.map((b, i) =>
+                b.type === "text" ? (
+                  <div key={b.id} className={"text-block block-" + b.style}>
+                    <textarea
+                      rows={1}
+                      ref={(el) => {
+                        if (el) {
+                          fields.current.set(b.id, el);
+                          el.style.height = "auto";
+                          el.style.height =
+                            Math.max(56, el.scrollHeight) + "px";
+                        } else fields.current.delete(b.id);
+                      }}
+                      aria-label={"第" + (i + 1) + "段文字"}
+                      placeholder={
+                        i === 0 ? "这首歌，让你想起了什么？" : "接着写……"
+                      }
+                      value={b.text}
+                      onFocus={(e) => remember(e.currentTarget, b.id)}
+                      onSelect={(e) => remember(e.currentTarget, b.id)}
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          !e.shiftKey &&
+                          !e.nativeEvent.isComposing
+                        ) {
+                          e.preventDefault();
+                          const next = splitTextBlock(
+                            blocks,
+                            b.id,
+                            e.currentTarget.selectionStart,
+                            e.currentTarget.selectionEnd,
+                          );
+                          const following =
+                            next[next.findIndex((x) => x.id === b.id) + 1];
+                          set((value) => withBlocks(value, next));
+                          requestAnimationFrame(() =>
+                            fields.current.get(following.id)?.focus(),
+                          );
+                        } else if (
+                          e.key === "Backspace" &&
+                          !b.text &&
+                          i > 0 &&
+                          blocks[i - 1].type === "text"
+                        ) {
+                          e.preventDefault();
+                          const previous = blocks[i - 1];
+                          set((value) =>
+                            withBlocks(
+                              value,
+                              value.blocks!.filter((x) => x.id !== b.id),
+                            ),
+                          );
+                          requestAnimationFrame(() =>
+                            fields.current.get(previous.id)?.focus(),
+                          );
+                        }
+                      }}
+                      onChange={(e) => {
+                        changeBlock(b.id, { text: e.target.value });
+                        remember(e.currentTarget, b.id);
+                      }}
+                    />
+                    {b.highlight && b.text.includes(b.highlight) && (
+                      <div className="highlight-preview">
+                        <mark>{b.highlight}</mark>
+                        <button
+                          aria-label="移除高亮"
+                          onClick={() => changeBlock(b.id, { highlight: "" })}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    key={b.id}
+                    className={
+                      b.type === "image" ? "photo-edit" : "flow-sticker"
+                    }
+                  >
+                    {b.type === "image" ? (
+                      <img src={b.src} alt="日记图片" />
+                    ) : (
+                      <span>{b.text}</span>
+                    )}
+                    <button
+                      aria-label={b.type === "image" ? "移除图片" : "移除装饰"}
+                      onClick={() =>
+                        set((value) =>
+                          withBlocks(
+                            value,
+                            value.blocks!.filter((x) => x.id !== b.id),
+                          ),
+                        )
+                      }
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ),
+              )}
             </div>
           </div>
           <div className="decoration-tools">
-            <span className="small">A SMALL FINISHING TOUCH</span>
+            <span className="small">为这段文字留一点装饰</span>
             <div>
               {["✺", "♡", "✿", "☾", "〰"].map((s) => (
                 <button
                   key={s}
-                  aria-label={`Add ${s} sticker`}
-                  onClick={() => patch({ stickers: [...m.stickers, s] })}
+                  aria-label={"插入" + s + "装饰"}
+                  onClick={() =>
+                    insert({
+                      id: crypto.randomUUID(),
+                      type: "sticker",
+                      text: s,
+                    })
+                  }
                 >
                   {s}
                 </button>
@@ -202,63 +318,93 @@ export function Editor({
       ) : (
         <div className="sleeve-editor">
           <Sleeve moment={m} />
-          <h2>Make it feel like you.</h2>
-          <p>The sleeve is yours. The record keeps the song.</p>
+          <h2>让封套，也像你。</h2>
+          <p>封套收藏此刻，唱片留住这首歌。</p>
           <div className="tabs">
             {(["original", "paper", "ink"] as const).map((s) => (
               <button
                 key={s}
-                className={m.sleeve === s ? "selected" : ""}
-                onClick={() => patch({ sleeve: s })}
+                className={m.sleeve === s && !m.sleeveImage ? "selected" : ""}
+                onClick={() => patch({ sleeve: s, sleeveImage: undefined })}
               >
-                {s === "original" ? "Album" : s === "paper" ? "Paper" : "Ink"}
+                {s === "original" ? "专辑" : s === "paper" ? "纸感" : "墨色"}
               </button>
             ))}
           </div>
+          <label className="cover-upload">
+            <ImagePlus size={18} />
+            {m.sleeveImage ? "更换封面图片" : "从相册选择"}
+            <input
+              type="file"
+              accept="image/*"
+              aria-label="选择封套图片"
+              disabled={busy}
+              onChange={(e) => {
+                void image(e.target.files?.[0], true);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {m.sleeveImage && <p>已居中裁切为方形 · 点选上方样式可恢复</p>}
         </div>
       )}
-      <section className="mood-picker">
+      <section className="mood-picker face-picker">
         <h3>
-          A little bookmark for the feeling <span>optional</span>
+          记录心情 <span>给今天一个表情</span>
         </h3>
-        <div>
+        <div className="mood-faces">
           {moods.map((mood) => (
             <button
-              key={mood.label}
-              aria-pressed={m.mood?.label === mood.label}
-              className={m.mood?.label === mood.label ? "chosen" : ""}
+              key={mood.level}
+              aria-label={mood.label}
+              aria-pressed={m.mood?.level === mood.level}
+              className={m.mood?.level === mood.level ? "chosen" : ""}
+              style={{ "--mood-color": mood.color } as React.CSSProperties}
               onClick={() =>
-                patch({ mood: m.mood?.label === mood.label ? undefined : mood })
+                patch({ mood: { ...mood, label: m.mood?.label || "" } })
               }
             >
-              {mood.emoji} {mood.label}
+              <span>{mood.emoji}</span>
+              <small>{mood.label}</small>
             </button>
           ))}
-          <button
-            onClick={() => patch({ mood: undefined })}
-            aria-pressed={!m.mood}
-          >
-            No mood
-          </button>
         </div>
+        {m.mood && (
+          <label className="mood-label">
+            写下你的感受
+            <input
+              aria-label="心情文字"
+              maxLength={40}
+              placeholder="比如：累但开心，有点想家……"
+              value={m.mood.label}
+              onChange={(e) =>
+                patch({ mood: { ...m.mood!, label: e.target.value } })
+              }
+            />
+          </label>
+        )}
+        <button
+          className="no-mood"
+          aria-pressed={!m.mood}
+          onClick={() => patch({ mood: undefined })}
+        >
+          这次不记录心情
+        </button>
       </section>
+      {busy && (
+        <p className="footnote" role="status">
+          正在整理图片……
+        </p>
+      )}
       {error && (
         <p role="alert" className="error">
           {error}
         </p>
       )}
-      <button
-        className="primary save-bottom"
-        onClick={() => {
-          if (!save(m))
-            setError(
-              "Could not save to browser storage. Your draft is still here. Try removing a photo.",
-            );
-        }}
-      >
-        Press this moment into vinyl <span>↗</span>
+      <button className="primary save-bottom" disabled={busy} onClick={submit}>
+        把此刻，刻进黑胶 <span>↗</span>
       </button>
-      <p className="footnote">Only here, on this device. Just for you.</p>
+      <p className="footnote">只存在这台设备，留给自己。</p>
     </main>
   );
 }
