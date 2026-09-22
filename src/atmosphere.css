@@ -1,0 +1,473 @@
+/* Original painted-paper art and translucent navigation. */
+:root {
+  --paper: #e8dfcb;
+  --ink: #263b3f;
+  --muted: #656956;
+  --line: #a8aa9580;
+  --accent: #ad4d32;
+  color: var(--ink);
+  background: #20353c;
+}
+body {
+  background:
+    radial-gradient(ellipse at 85% 15%, #597477, transparent 45%),
+    radial-gradient(ellipse at 5% 90%, #724938, transparent 50%), #20353c;
+  background-attachment: fixed;
+}
+.app-shell {
+  background:
+    linear-gradient(#eae2d2d9, #e7ddc9ec),
+    url("./assets/painted-paper.svg") center top / 100% auto;
+  box-shadow: 0 22px 100px #07192080;
+}
+.home,
+.editor,
+.reading {
+  background: transparent;
+}
+.home {
+  background:
+    linear-gradient(#213f48 0 145px, transparent 145px),
+    url("./assets/painted-paper.svg") center 120px / 100% auto;
+}
+.page-top,
+.player-top {
+  color: #f4efdc;
+  background: linear-gradient(120deg, #567b8377, #173e4966);
+  border: 1px solid #e9ffff45;
+  border-top-color: #ffffff80;
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  box-shadow:
+    inset 0 1px #ffffff30,
+    0 8px 24px #102a3420;
+}
+.editor > .page-top,
+.reading > .page-top {
+  background-color: #23434bec;
+}
+.wordmark {
+  font-size: 34px;
+}
+.home-tabs {
+  margin: 10px 18px 0;
+  background: linear-gradient(110deg, #e2f3ef33, #a7c9cf19);
+  border-color: #e6ffff55;
+  box-shadow:
+    inset 0 1px #fff5,
+    0 7px 22px #17343d38;
+  border-radius: 18px;
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
+}
+.home-tabs > button {
+  color: #dce6df;
+  border-radius: 13px;
+}
+.home-tabs .selected {
+  color: #fff9e9;
+  background: #f4ffff29;
+  box-shadow:
+    inset 0 1px #fff6,
+    0 3px 10px #142c3326;
+}
+.home-tabs small {
+  color: #e5dfc4;
+}
+.period-tabs,
+.editor > .tabs,
+.flow-toolbar,
+.layout-switch {
+  background: linear-gradient(125deg, #fffef07d, #dce9e65e);
+  border: 1px solid #ffffffb0;
+  border-radius: 15px;
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  box-shadow:
+    inset 0 1px #fff9,
+    0 5px 18px #29453c14;
+}
+.period-tabs .selected,
+.editor > .tabs .selected {
+  background: #ffffff91;
+  color: #29474a;
+}
+.layout-switch {
+  width: fit-content;
+  margin-left: auto;
+  gap: 4px;
+  padding: 3px 6px;
+}
+.layout-switch button {
+  padding: 0 10px;
+  border-radius: 11px;
+}
+.layout-switch button[aria-pressed="true"] {
+  background: #ffffff8c;
+}
+.player {
+  color: #eee9d9;
+  background:
+    linear-gradient(165deg, #153b45da, #263b42ee 70%, #533d32ed),
+    url("./assets/painted-paper.svg") center / cover;
+  padding-top: 12px;
+}
+.player-top {
+  height: 58px;
+  margin: 0 -12px 26px;
+  padding: 0 16px;
+  border-radius: 17px;
+}
+.player-top .small {
+  border-color: #e4e7d966;
+  color: #dcd9c5;
+}
+.album {
+  transform: rotate(-1deg);
+  border: 7px solid #d9d2b9;
+  box-shadow:
+    5px 14px 0 #0b293e30,
+    0 22px 40px #071c3055;
+}
+.album > img {
+  filter: saturate(0.52) contrast(1.13) sepia(0.16);
+}
+.album::after {
+  background:
+    linear-gradient(transparent 25%, #102a33cc),
+    linear-gradient(135deg, #c86d2822, transparent 60%);
+}
+.album-title {
+  left: 20px;
+  bottom: 22px;
+}
+.album-title strong {
+  font-size: 40px;
+  font-style: italic;
+}
+.song-info {
+  padding-top: 30px;
+}
+.song-info h1 {
+  color: #fff4d9;
+}
+.song-info p,
+.progress > div {
+  color: #c0c6b9;
+}
+.rambling-entry {
+  background: #d6eeeb20;
+  border-color: #e2ffff55;
+  box-shadow: inset 0 1px #ffffff44;
+  backdrop-filter: blur(20px);
+  color: #f6f0db;
+}
+.progress input {
+  background: #bccab866;
+}
+.progress input::-webkit-slider-thumb {
+  background: #dfb37a;
+  width: 10px;
+  height: 10px;
+}
+.play-main {
+  background: #c16945;
+  box-shadow:
+    0 0 0 7px #d1906020,
+    inset 0 1px #ffc797;
+}
+.playback .active {
+  background: #d8e9db29;
+  color: #e3b273;
+}
+.player-bottom {
+  border-top-color: #bccbb340;
+}
+.player-bottom .small,
+.demo-note {
+  color: #bdc7b9;
+}
+.primary {
+  background: #a64e34;
+  box-shadow:
+    inset 0 1px #e7b2835e,
+    0 5px 0 #63362922;
+  color: #fff5dd;
+  letter-spacing: 1px;
+}
+.primary:hover {
+  background: #92442f;
+}
+.create-page {
+  padding-top: 32px;
+}
+.create-heading .eyebrow,
+.collection-intro .eyebrow {
+  display: inline-block;
+  background: #29474a;
+  color: #f3e9cb;
+  padding: 6px 9px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  transform: rotate(-2deg);
+}
+.create-heading h1 {
+  font-size: 43px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 1px;
+}
+.create-heading h1 em {
+  color: #a6462f;
+  position: relative;
+}
+.create-heading h1 em::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: -5px;
+  width: 105%;
+  height: 6px;
+  background: #a6462f75;
+  clip-path: polygon(0 28%, 100% 0, 95% 70%, 15% 100%);
+}
+.create-heading p {
+  color: #505d54;
+  margin-top: 20px;
+  line-height: 1.9;
+}
+.blank-sleeve {
+  background:
+    linear-gradient(120deg, #dcc9a575, #e8dcc192),
+    url("./assets/painted-paper.svg") 50% 65% / 210%;
+  border-color: #7d866b80;
+  box-shadow: 3px 12px 18px #173d4150;
+}
+.blank-sleeve > small {
+  color: #4d655d;
+}
+.handwritten {
+  color: #304c4d;
+  font-weight: 600;
+  line-height: 1.7;
+  font-size: 29px;
+  margin-top: 22px;
+}
+.sleeve-star {
+  color: #a44e34;
+  font-size: 54px;
+  opacity: 0.85;
+}
+.sleeve-rule {
+  border-color: #65765b;
+  color: #435f58;
+}
+.paper-ticket {
+  background: #bd6345;
+  color: #fff0cd;
+  border-color: #e8b185;
+}
+.current-soundtrack {
+  background: #f9f0d775;
+  padding: 12px;
+  border-left: 3px solid #927647;
+}
+.collection-intro h1 {
+  font-size: 35px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.collection-intro p {
+  font-size: 13px;
+  color: #536053;
+  line-height: 1.8;
+  max-width: 29ch;
+}
+.collection-intro::after {
+  width: 72px;
+  height: 5px;
+  background: #ab523a;
+}
+.period-heading h2 {
+  color: #334e4e;
+}
+.shelf-hint {
+  color: #576152;
+  line-height: 1.9;
+}
+.vinyl-shelf {
+  background: linear-gradient(#273f4012, #66756822);
+  border-bottom-color: #425b52;
+}
+.sleeve.paper {
+  background:
+    linear-gradient(110deg, #e3cfaaad, #e5dcc1e8),
+    url("./assets/painted-paper.svg") center / cover;
+}
+.sleeve.ink {
+  background: #263f48;
+}
+.sleeve-copy strong {
+  font-family: "Libre Caslon Display", "Songti SC", "SimSun", serif;
+}
+.locked-song {
+  background: #7181761c;
+  border-bottom: 1px dashed #65745d55;
+}
+.diary-paper {
+  background: linear-gradient(110deg, #b9844d12, transparent 65%);
+}
+.day {
+  color: #2e5155;
+  font-style: italic;
+  text-shadow: 2px 2px #b7744224;
+}
+.month,
+.year {
+  border-color: #6e7b65;
+}
+.time-box {
+  background: #f4eddb77;
+  border-color: #6e7b65;
+  transform: rotate(1deg);
+}
+.title-input,
+.diary-content > h2:first-child {
+  color: #9d4933;
+}
+.text-block textarea::placeholder,
+.title-input::placeholder {
+  color: #827962;
+}
+mark {
+  background: #d3af6199;
+}
+.decoration-tools {
+  background: #586e5610;
+}
+.mood-picker {
+  background: #d9ceb53a;
+}
+.face-picker h3 {
+  color: #34514d;
+  font-size: 16px;
+}
+.face-picker h3 span {
+  font-size: 11px;
+}
+.sleeve-editor h2 {
+  color: #98472e;
+  font-size: 29px;
+}
+.cover-upload {
+  border-color: #697b65;
+  background: #fbf3df40;
+}
+.reading-vinyl {
+  background:
+    linear-gradient(140deg, #315661d9, #6d7c66ab),
+    url("./assets/painted-paper.svg") 50% 20% / cover;
+}
+.reading-controls {
+  color: #f0efd9;
+  background: #d9ece42a;
+  border-top: 1px solid #ffffff50;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+.reading-song {
+  background: #e5d4b599;
+  border-bottom: 1px dashed #8c927244;
+}
+.reading-mood {
+  color: #6c5e38;
+}
+.diary-end > span {
+  color: #a64e34;
+}
+.diary-end p {
+  color: #536a5e;
+}
+.inspection-backdrop {
+  background: #0e303ba3;
+}
+.inspection-actions .primary {
+  background: #b65d3fdc;
+}
+.inspection-actions .put-back {
+  background: #afcfcc33;
+  border-color: #d7f4f066;
+}
+.toast {
+  background: #23474bed;
+  border: 1px solid #bddbc76b;
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+}
+@media (min-width: 900px) {
+  body {
+    background:
+      radial-gradient(ellipse at 80% 15%, #597477, transparent 45%),
+      radial-gradient(ellipse at 5% 90%, #724938, transparent 50%), #20353c;
+  }
+  .app-shell {
+    border-color: #9db2a940;
+  }
+  .desktop-note .brand {
+    color: #ede4c8;
+    font-size: 46px;
+  }
+  .desktop-note p,
+  .desktop-bottom,
+  .desktop-caption > span {
+    color: #c7cbb7;
+  }
+  .desktop-caption p {
+    color: #dfc79f;
+  }
+  .tiny-record {
+    color: #b6805e;
+  }
+  .player-top {
+    margin-top: 4px;
+  }
+}
+@media (max-width: 360px) {
+  .create-heading h1 {
+    font-size: 36px;
+  }
+  .album-title strong {
+    font-size: 34px;
+  }
+  .handwritten {
+    font-size: 27px;
+  }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .page-top,
+  .player-top,
+  .home-tabs {
+    background: #36565e;
+  }
+  .period-tabs,
+  .editor > .tabs,
+  .flow-toolbar {
+    background: #e9e6d8;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .page-top,
+  .player-top,
+  .home-tabs {
+    background: #36565e;
+  }
+  .period-tabs,
+  .editor > .tabs,
+  .flow-toolbar {
+    background: #e9e6d8;
+  }
+}
+.blank-sleeve,
+.sleeve.paper {
+  background-color: #ded2b8;
+}

@@ -120,7 +120,7 @@ export default function App() {
     setDraft(null);
     setTab(1);
     go("home");
-    setToast("此刻，已刻进黑胶。");
+    setToast("刻好了。这一面，归你。");
     return true;
   }
   function open(m: Moment) {
@@ -154,9 +154,9 @@ export default function App() {
       <div className="desktop-note">
         <span className="brand">rambling</span>
         <p>
-          把心情，刻成唱片。
+          有些心事，适合单曲循环。
           <br />
-          留一个可以回来的地方。
+          给它们找个不怕落灰的地方。
         </p>
         <span className="desktop-bottom">
           第一辑
@@ -256,13 +256,13 @@ export default function App() {
             >
               <section className="create-page">
                 <div className="create-heading">
-                  <span className="eyebrow">有些歌，会成为一个地方。</span>
+                  <span className="eyebrow">脑内小剧场，开录。</span>
                   <h1>
-                    留住一点
+                    这首歌，
                     <br />
-                    <em>此时此刻。</em>
+                    <em>有你的戏。</em>
                   </h1>
-                  <p>今天，这首歌带给你什么感觉？</p>
+                  <p>刚才想到了什么？趁它还没溜走，写下来。</p>
                 </div>
                 <button
                   className="create-art"
@@ -278,12 +278,12 @@ export default function App() {
                     <small>
                       RAMBLING
                       <br />
-                      私人珍藏
+                      非卖品 · 仅此一份
                     </small>
                     <span className="handwritten">
-                      把这份心情，
+                      今日份心事，
                       <br />
-                      留在唱片里。
+                      请轻拿轻放。
                     </span>
                     <span className="sleeve-star">✳</span>
                     <div className="sleeve-rule">
@@ -291,9 +291,9 @@ export default function App() {
                     </div>
                   </div>
                   <div className="paper-ticket">
-                    一首歌
+                    一面音乐
                     <br />
-                    一小段生活
+                    一面是你
                   </div>
                 </button>
                 <div className="current-soundtrack">
@@ -319,9 +319,7 @@ export default function App() {
                 >
                   记录此刻 <ArrowUpRight size={20} />
                 </button>
-                <p className="footnote">
-                  几句话，一种心情，一张留给自己的唱片。
-                </p>
+                <p className="footnote">写两句也算。今天不必交出一篇大作。</p>
               </section>
               <section className="collection-page">
                 <Collection moments={moments} open={open} />
@@ -338,12 +336,12 @@ export default function App() {
       <div className="desktop-caption">
         <span>静静听。</span>
         <p>
-          在一首歌
+          在一面音乐
           <br />
           和一段回忆之间。
         </p>
         <div className="tiny-record">◉</div>
-        <span>你的私人唱片柜</span>
+        <span>内有心事 · 随时开门</span>
       </div>
     </MotionConfig>
   );

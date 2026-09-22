@@ -23,7 +23,7 @@ export function Reading({
         <button aria-label="返回我的黑胶" onClick={back}>
           <ArrowLeft />
         </button>
-        <span>让回忆，再放一遍</span>
+        <span>那天的你，正在返场</span>
         <button aria-label="编辑日记" onClick={edit}>
           <Pencil size={18} />
         </button>
@@ -64,7 +64,7 @@ export function Reading({
         <DiaryContent moment={m} />
         <footer className="diary-end">
           <span>✳</span>
-          <p>歌会结束，此刻会留下。</p>
+          <p>听完了。那天的你，还好好地待在这里。</p>
           <small>RAMBLING · 私人珍藏</small>
         </footer>
       </article>

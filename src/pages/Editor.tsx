@@ -184,7 +184,7 @@ export function Editor({
             <input
               className="title-input"
               aria-label="日记标题"
-              placeholder="给此刻起个名字（选填）"
+              placeholder="这一集叫什么？（选填）"
               value={m.title}
               onChange={(e) => patch({ title: e.target.value })}
             />
@@ -204,7 +204,9 @@ export function Editor({
                       }}
                       aria-label={"第" + (i + 1) + "段文字"}
                       placeholder={
-                        i === 0 ? "这首歌，让你想起了什么？" : "接着写……"
+                        i === 0
+                          ? "不必从头讲。就从脑海里冒出的那一句开始。"
+                          : "后来呢？"
                       }
                       value={b.text}
                       onFocus={(e) => remember(e.currentTarget, b.id)}
@@ -295,7 +297,7 @@ export function Editor({
             </div>
           </div>
           <div className="decoration-tools">
-            <span className="small">为这段文字留一点装饰</span>
+            <span className="small">给心事盖个小印章</span>
             <div>
               {["✺", "♡", "✿", "☾", "〰"].map((s) => (
                 <button
@@ -318,8 +320,8 @@ export function Editor({
       ) : (
         <div className="sleeve-editor">
           <Sleeve moment={m} />
-          <h2>让封套，也像你。</h2>
-          <p>封套收藏此刻，唱片留住这首歌。</p>
+          <h2>心事，也要有封面。</h2>
+          <p>穿哪件外套，由这一刻的你决定。</p>
           <div className="tabs">
             {(["original", "paper", "ink"] as const).map((s) => (
               <button
@@ -350,7 +352,7 @@ export function Editor({
       )}
       <section className="mood-picker face-picker">
         <h3>
-          记录心情 <span>给今天一个表情</span>
+          记录心情 <span>今天的内心天气</span>
         </h3>
         <div className="mood-faces">
           {moods.map((mood) => (
@@ -371,7 +373,7 @@ export function Editor({
         </div>
         {m.mood && (
           <label className="mood-label">
-            写下你的感受
+            再加一句自己的旁白
             <input
               aria-label="心情文字"
               maxLength={40}
@@ -388,7 +390,7 @@ export function Editor({
           aria-pressed={!m.mood}
           onClick={() => patch({ mood: undefined })}
         >
-          这次不记录心情
+          今天就不贴标签了
         </button>
       </section>
       {busy && (
@@ -404,7 +406,7 @@ export function Editor({
       <button className="primary save-bottom" disabled={busy} onClick={submit}>
         把此刻，刻进黑胶 <span>↗</span>
       </button>
-      <p className="footnote">只存在这台设备，留给自己。</p>
+      <p className="footnote">存在这台设备里。没有观众，只有你。</p>
     </main>
   );
 }

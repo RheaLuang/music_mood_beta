@@ -114,7 +114,7 @@ export function Player({
         </button>
       </div>
       <div className="player-bottom">
-        <span className="small">留一点空间，听首歌</span>
+        <span className="small">外面的事，等这首听完再说。</span>
       </div>
       <p className="demo-note">虚构曲目 · 模拟播放</p>
     </main>

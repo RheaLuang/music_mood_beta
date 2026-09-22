@@ -68,9 +68,9 @@ export function Collection({
   return (
     <section className="collection">
       <div className="collection-intro">
-        <span className="eyebrow">私人珍藏</span>
-        <h1>心情，有迹可循。</h1>
-        <p>{moments.length} 个瞬间，总有一首歌可以重返。</p>
+        <span className="eyebrow">往日心事保管处</span>
+        <h1>来翻翻，旧心情。</h1>
+        <p>{moments.length} 张黑胶。有些日子，一放就想起来。</p>
       </div>
       <div className="period-tabs" role="group" aria-label="浏览时间范围">
         {(["Week", "Month", "Year"] as const).map((x) => (
@@ -142,7 +142,7 @@ export function Collection({
                           }}
                         />
                       ))}
-                      {!entries.length && <span>等待下一段故事</span>}
+                      {!entries.length && <span>这页，先留白</span>}
                     </div>
                     <div>
                       <strong>
@@ -159,16 +159,16 @@ export function Collection({
           ) : !filtered.length ? (
             <div className="empty">
               <span>○</span>
-              <h2>给生活，留一点空白。</h2>
-              <p>这段时间，还没有留下记录。</p>
+              <h2>这里还没开张。</h2>
+              <p>也许忙着过日子，忘了给回忆留个座。</p>
               <button onClick={() => setDate(new Date())}>回到今天</button>
             </div>
           ) : mode === "Month" && !grid ? (
             <>
               <p className="shelf-hint">
-                沿着唱片书脊，慢慢翻找。
+                今天想重逢哪一个自己？
                 <br />
-                轻点一张，把那天拉近一点。
+                抽一张，听听那天的内心独白。
               </p>
               <div className="shelf-scroll">
                 <div className="vinyl-shelf">

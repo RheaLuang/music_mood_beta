@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1300" viewBox="0 0 900 1300">
+<defs><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".014 .06" numOctaves="3" seed="31"/><feDisplacementMap in="SourceGraphic" scale="26"/></filter><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".68" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs>
+<g filter="url(#rough)" opacity=".55">
+<path d="M650 -70 1000 25 810 510 610 375 770 170 560 80Z" fill="#356568"/>
+<path d="M-110 690 210 575 340 810 50 1020-100 900Z" fill="#a45639" opacity=".42"/>
+<path d="m760 870 250 60-20 380-440 25 200-180-50-180Z" fill="#253c46" opacity=".38"/>
+<path d="m-40 15 285 80-150 32 200 66-310-10Z" fill="#c39e65" opacity=".5"/>
+<path d="m40 1200 490-120 40 38-470 140Z" fill="#d0aa67" opacity=".4"/>
+</g>
+<rect width="900" height="1300" filter="url(#grain)" opacity=".065"/>
+</svg>
