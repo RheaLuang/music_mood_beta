@@ -1,8 +1,16 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, useRef } from "react";
 const ShareDiary = lazy(() =>
   import("../components/ShareDiary").then((m) => ({ default: m.ShareDiary })),
 );
-import { ArrowLeft, Heart, Pause, Play, Pencil, Share2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  Pause,
+  Play,
+  Pencil,
+  Share2,
+  Trash2,
+} from "lucide-react";
 import type { Moment } from "../types";
 import { Record } from "../components/Vinyl";
 import { DiaryHeader, DiaryContent } from "../components/Diary";
@@ -14,6 +22,7 @@ export function Reading({
   back,
   edit,
   like,
+  remove,
 }: {
   moment: Moment;
   playing: boolean;
@@ -22,7 +31,10 @@ export function Reading({
   back: () => void;
   edit: () => void;
   like: () => void;
+  remove: () => boolean;
 }) {
+  const confirmation = useRef<HTMLDialogElement>(null);
+  const [error, setError] = useState("");
   const [sharing, setSharing] = useState(false);
   return (
     <main className="reading">
@@ -31,10 +43,43 @@ export function Reading({
           <ArrowLeft />
         </button>
         <span>A little encore from your past self</span>
-        <button aria-label="Edit diary" onClick={edit}>
-          <Pencil size={18} />
-        </button>
+        <div className="reading-edit-actions">
+          <button aria-label="Edit diary" onClick={edit}>
+            <Pencil size={18} />
+          </button>
+          <button
+            aria-label="Delete diary"
+            onClick={() => confirmation.current?.showModal()}
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
       </header>
+      <dialog
+        ref={confirmation}
+        className="delete-confirmation"
+        aria-labelledby="delete-diary-title"
+      >
+        <h2 id="delete-diary-title">Delete this diary?</h2>
+        <p>
+          “{m.title || m.song.title}” and its photos will be removed from your
+          shelf on this device. This cannot be undone.
+        </p>
+        {error && <p role="alert">{error}</p>}
+        <div className="manage-actions">
+          <button autoFocus onClick={() => confirmation.current?.close()}>
+            Keep it
+          </button>
+          <button
+            onClick={() => {
+              if (!remove())
+                setError("Could not save the change. Please try again.");
+            }}
+          >
+            Delete diary
+          </button>
+        </div>
+      </dialog>
       <div className="reading-vinyl">
         <Record song={m.song} playing={playing} />
         <div className="reading-controls">

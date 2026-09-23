@@ -62,6 +62,12 @@ export function Collection({
     end.setHours(23, 59, 59, 999);
     return d >= start && d <= end;
   });
+  useEffect(() => {
+    setManaging(false);
+    setChecked([]);
+    setError("");
+  }, [mode, grid, date]);
+  const canManage = mode === "Week" || (mode === "Month" && grid);
   function shift(n: number) {
     const d = new Date(date);
     if (mode === "Year") d.setFullYear(d.getFullYear() + n);
@@ -79,45 +85,89 @@ export function Collection({
         : `${new Date(date.getFullYear(), date.getMonth(), date.getDate() - 6).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} — ${date.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
   return (
     <section className="collection">
-      <div className="collection-management">
-        <button
-          aria-label="Manage albums"
-          aria-pressed={managing}
-          onClick={() => {
-            setManaging(!managing);
-            setChecked([]);
-            setError("");
-          }}
-        >
-          <MoreHorizontal size={22} />
-        </button>
-        {managing && (
+      {canManage && (
+        <div className="collection-management">
           <button
+            aria-label="Manage albums"
+            aria-pressed={managing}
             onClick={() => {
-              setManaging(false);
+              setManaging(!managing);
               setChecked([]);
+              setError("");
             }}
           >
-            Done
+            <MoreHorizontal size={22} />
           </button>
-        )}
+          {managing && (
+            <button
+              onClick={() => {
+                setManaging(false);
+                setChecked([]);
+              }}
+            >
+              Done
+            </button>
+          )}
+        </div>
+      )}
+      <div className="collection-intro">
+        <span className="eyebrow">THE LOST-AND-FOUND OF FEELINGS</span>
+        <h1>Old feelings. Good company.</h1>
+        <p>
+          {moments.length} records. Some days come back with the first note.
+        </p>
       </div>
-      {managing ? (
-        <div className="album-manager">
-          <h1>Make room on your shelf.</h1>
-          <p>Select records to remove, including their diary and photos.</p>
+      <div className="period-tabs" role="group" aria-label="Browse by period">
+        {(["Week", "Month", "Year"] as const).map((x) => (
+          <button
+            key={periodNames[x]}
+            className={mode === x ? "selected" : ""}
+            aria-pressed={mode === x}
+            onClick={() => setMode(x)}
+          >
+            {periodNames[x]}
+          </button>
+        ))}
+      </div>
+      <div className="period-heading">
+        <button
+          aria-label={`Previous ${periodNames[mode]}`}
+          onClick={() => shift(-1)}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <h2>{heading}</h2>
+        <button
+          aria-label={`Next ${periodNames[mode]}`}
+          onClick={() => shift(1)}
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+      {mode === "Month" && (
+        <div className="layout-switch">
+          <button aria-pressed={!grid} onClick={() => setGrid(false)}>
+            <Library size={14} /> Shelf
+          </button>
+          <button aria-pressed={grid} onClick={() => setGrid(true)}>
+            <Grid2X2 size={14} /> Grid
+          </button>
+        </div>
+      )}
+      {managing && (
+        <>
           <div className="manage-actions">
             <button
-              disabled={!moments.length}
+              disabled={!filtered.length}
               onClick={() =>
                 setChecked(
-                  checked.length === moments.length
+                  checked.length === filtered.length
                     ? []
-                    : moments.map((m) => m.id),
+                    : filtered.map((m) => m.id),
                 )
               }
             >
-              {checked.length === moments.length && moments.length
+              {checked.length === filtered.length && filtered.length
                 ? "Deselect all"
                 : "Select all"}
             </button>
@@ -128,39 +178,6 @@ export function Collection({
             >
               Delete selected
             </button>
-          </div>
-          {!moments.length && <p>Your shelf has room for a new story.</p>}
-          <div className="manage-records">
-            {moments.map((m) => (
-              <label
-                key={m.id}
-                className={checked.includes(m.id) ? "is-selected" : ""}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked.includes(m.id)}
-                  onChange={(e) =>
-                    setChecked(
-                      e.target.checked
-                        ? [...checked, m.id]
-                        : checked.filter((id) => id !== m.id),
-                    )
-                  }
-                />
-                <img src={m.sleeveImage || m.song.artwork} alt="" />
-                <span>
-                  <strong>{m.title || m.song.title}</strong>
-                  <small>
-                    {new Date(m.createdAt).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}{" "}
-                    · {m.song.artist}
-                  </small>
-                </span>
-              </label>
-            ))}
           </div>
           <dialog className="delete-confirmation" ref={confirmation}>
             <h2>Delete {checked.length} records?</h2>
@@ -189,219 +206,183 @@ export function Collection({
               </button>
             </div>
           </dialog>
-        </div>
-      ) : (
-        <>
-          <div className="collection-intro">
-            <span className="eyebrow">THE LOST-AND-FOUND OF FEELINGS</span>
-            <h1>Old feelings. Good company.</h1>
-            <p>
-              {moments.length} records. Some days come back with the first note.
-            </p>
-          </div>
-          <div
-            className="period-tabs"
-            role="group"
-            aria-label="Browse by period"
-          >
-            {(["Week", "Month", "Year"] as const).map((x) => (
-              <button
-                key={periodNames[x]}
-                className={mode === x ? "selected" : ""}
-                aria-pressed={mode === x}
-                onClick={() => setMode(x)}
-              >
-                {periodNames[x]}
-              </button>
-            ))}
-          </div>
-          <div className="period-heading">
-            <button
-              aria-label={`Previous ${periodNames[mode]}`}
-              onClick={() => shift(-1)}
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <h2>{heading}</h2>
-            <button
-              aria-label={`Next ${periodNames[mode]}`}
-              onClick={() => shift(1)}
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-          {mode === "Month" && (
-            <div className="layout-switch">
-              <button aria-pressed={!grid} onClick={() => setGrid(false)}>
-                <Library size={14} /> Shelf
-              </button>
-              <button aria-pressed={grid} onClick={() => setGrid(true)}>
-                <Grid2X2 size={14} /> Grid
-              </button>
+        </>
+      )}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={mode + date.toDateString() + grid}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.18 }}
+        >
+          {mode === "Year" ? (
+            <>
+              <p className="year-example-note">
+                A year on the shelf. Sample records fill out the demo calendar.
+              </p>
+              <div className="year-archive">
+                {Array.from({ length: 12 }, (_, month) => {
+                  const entries = filtered.filter(
+                    (m) => new Date(m.createdAt).getMonth() === month,
+                  );
+                  return (
+                    <button
+                      className="archive-month"
+                      key={month}
+                      onClick={() => {
+                        setDate(new Date(date.getFullYear(), month, 1));
+                        setMode("Month");
+                        setGrid(false);
+                      }}
+                    >
+                      <div className="mini-shelf">
+                        {entries.slice(0, 8).map((m, i) => (
+                          <span
+                            className="archive-spine"
+                            aria-hidden="true"
+                            key={m.id}
+                            style={
+                              {
+                                "--spine-paper": [
+                                  "#ddd5c2",
+                                  "#aab4a4",
+                                  "#b7a28c",
+                                  "#727f78",
+                                  "#d7c9b2",
+                                  "#abb6b6",
+                                  "#8e8a78",
+                                  "#cab9a5",
+                                ][(month + i) % 8],
+                                "--spine-ink":
+                                  (month + i) % 8 === 3 ? "#f0eddf" : "#51574e",
+                                "--spine-height": `${[79, 87, 82, 91, 85, 76, 88, 81][(month + i) % 8]}px`,
+                              } as React.CSSProperties
+                            }
+                          >
+                            <b>{String(i + 1).padStart(2, "0")}</b>
+                            <em>{m.song.album}</em>
+                          </span>
+                        ))}
+                        {!entries.length && <span>Room for a new memory</span>}
+                      </div>
+                      <div>
+                        <strong>
+                          {new Date(2000, month).toLocaleDateString("en-GB", {
+                            month: "long",
+                          })}
+                        </strong>
+                        <small>{entries.length} records</small>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : !filtered.length ? (
+            <div className="empty">
+              <span>○</span>
+              <h2>Nothing on this shelf. Yet.</h2>
+              <p>Perhaps you were too busy living to leave a note.</p>
+              <button onClick={() => setDate(new Date())}>Back to today</button>
             </div>
-          )}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={mode + date.toDateString() + grid}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.18 }}
-            >
-              {mode === "Year" ? (
-                <>
-                  <p className="year-example-note">
-                    A year on the shelf. Sample records fill out the demo
-                    calendar.
-                  </p>
-                  <div className="year-archive">
-                    {Array.from({ length: 12 }, (_, month) => {
-                      const entries = filtered.filter(
-                        (m) => new Date(m.createdAt).getMonth() === month,
-                      );
-                      return (
-                        <button
-                          className="archive-month"
-                          key={month}
-                          onClick={() => {
-                            setDate(new Date(date.getFullYear(), month, 1));
-                            setMode("Month");
-                            setGrid(false);
-                          }}
-                        >
-                          <div className="mini-shelf">
-                            {entries.slice(0, 8).map((m, i) => (
-                              <span
-                                className="archive-spine"
-                                aria-hidden="true"
-                                key={m.id}
-                                style={
-                                  {
-                                    "--spine-paper": [
-                                      "#ddd5c2",
-                                      "#aab4a4",
-                                      "#b7a28c",
-                                      "#727f78",
-                                      "#d7c9b2",
-                                      "#abb6b6",
-                                      "#8e8a78",
-                                      "#cab9a5",
-                                    ][(month + i) % 8],
-                                    "--spine-ink":
-                                      (month + i) % 8 === 3
-                                        ? "#f0eddf"
-                                        : "#51574e",
-                                    "--spine-height": `${[79, 87, 82, 91, 85, 76, 88, 81][(month + i) % 8]}px`,
-                                  } as React.CSSProperties
-                                }
-                              >
-                                <b>{String(i + 1).padStart(2, "0")}</b>
-                                <em>{m.song.album}</em>
-                              </span>
-                            ))}
-                            {!entries.length && (
-                              <span>Room for a new memory</span>
-                            )}
-                          </div>
-                          <div>
-                            <strong>
-                              {new Date(2000, month).toLocaleDateString(
-                                "en-GB",
-                                {
-                                  month: "long",
-                                },
-                              )}
-                            </strong>
-                            <small>{entries.length} records</small>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : !filtered.length ? (
-                <div className="empty">
-                  <span>○</span>
-                  <h2>Nothing on this shelf. Yet.</h2>
-                  <p>Perhaps you were too busy living to leave a note.</p>
-                  <button onClick={() => setDate(new Date())}>
-                    Back to today
-                  </button>
-                </div>
-              ) : mode === "Month" && !grid ? (
-                <>
-                  <p className="shelf-hint">
-                    Which version of you shall we meet today?
-                    <br />
-                    Pull out a record. There is a story on the other side.
-                  </p>
-                  <div className="shelf-scroll">
-                    <div className="vinyl-shelf">
-                      {filtered.map((m, i) => (
-                        <button
-                          className="spine"
-                          key={m.id}
-                          aria-label={`Pull out ${m.title || m.song.title}`}
-                          onClick={(e) => pull(m, e.currentTarget)}
-                          style={{
-                            backgroundColor: [
-                              "#b7b7a1",
-                              "#d8c6a4",
-                              "#95a2a2",
-                              "#baa392",
-                            ][i % 4],
-                          }}
-                        >
-                          {m.mood && (
-                            <span
-                              className="spine-mood"
-                              style={{ background: m.mood.color }}
-                            >
-                              {m.mood.emoji}
-                            </span>
-                          )}
-                          <span className="spine-title">{m.song.title}</span>
-                          <small>
-                            {new Date(m.createdAt)
-                              .getDate()
-                              .toString()
-                              .padStart(2, "0")}
-                          </small>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="footnote">
-                    {filtered.length} private records ·{" "}
-                    {date.toLocaleDateString("en-GB", { month: "long" })}
-                  </p>
-                </>
-              ) : (
-                <div className="sleeve-grid">
+          ) : mode === "Month" && !grid ? (
+            <>
+              <p className="shelf-hint">
+                Which version of you shall we meet today?
+                <br />
+                Pull out a record. There is a story on the other side.
+              </p>
+              <div className="shelf-scroll">
+                <div className="vinyl-shelf">
                   {filtered.map((m, i) => (
                     <button
-                      className="collection-item"
+                      className="spine"
                       key={m.id}
-                      onClick={(e) => pull(m, e.currentTarget)}
+                      aria-label={`Pull out ${m.title || m.song.title}`}
+                      onClick={(e) =>
+                        managing
+                          ? setChecked(
+                              checked.includes(m.id)
+                                ? checked.filter((id) => id !== m.id)
+                                : [...checked, m.id],
+                            )
+                          : pull(m, e.currentTarget)
+                      }
+                      style={{
+                        backgroundColor: [
+                          "#b7b7a1",
+                          "#d8c6a4",
+                          "#95a2a2",
+                          "#baa392",
+                        ][i % 4],
+                      }}
                     >
-                      <Sleeve moment={m} />
-                      <div className="item-caption">
-                        <span>
-                          {new Date(m.createdAt).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                          })}
+                      {m.mood && (
+                        <span
+                          className="spine-mood"
+                          style={{ background: m.mood.color }}
+                        >
+                          {m.mood.emoji}
                         </span>
-                        <span>{m.title || m.song.title}</span>
-                      </div>
+                      )}
+                      <span className="spine-title">{m.song.title}</span>
+                      <small>
+                        {new Date(m.createdAt)
+                          .getDate()
+                          .toString()
+                          .padStart(2, "0")}
+                      </small>
                     </button>
                   ))}
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </>
-      )}
+              </div>
+              <p className="footnote">
+                {filtered.length} private records ·{" "}
+                {date.toLocaleDateString("en-GB", { month: "long" })}
+              </p>
+            </>
+          ) : (
+            <div className="sleeve-grid">
+              {filtered.map((m, i) => (
+                <button
+                  className={`collection-item ${managing && checked.includes(m.id) ? "album-selected" : ""}`}
+                  aria-label={
+                    managing ? `Select ${m.title || m.song.title}` : undefined
+                  }
+                  aria-pressed={managing ? checked.includes(m.id) : undefined}
+                  key={m.id}
+                  onClick={(e) =>
+                    managing
+                      ? setChecked(
+                          checked.includes(m.id)
+                            ? checked.filter((id) => id !== m.id)
+                            : [...checked, m.id],
+                        )
+                      : pull(m, e.currentTarget)
+                  }
+                >
+                  {managing && (
+                    <span className="album-check" aria-hidden="true">
+                      {checked.includes(m.id) ? "✓" : ""}
+                    </span>
+                  )}
+                  <Sleeve moment={m} />
+                  <div className="item-caption">
+                    <span>
+                      {new Date(m.createdAt).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                    <span>{m.title || m.song.title}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
       <AnimatePresence>
         {selected && (
           <motion.div

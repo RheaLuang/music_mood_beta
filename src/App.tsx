@@ -224,6 +224,13 @@ export default function App() {
           </Suspense>
         ) : nav.page === "read" && current ? (
           <Reading
+            remove={() => {
+              if (!persist(removeMoments(moments, [current.id]))) return false;
+              setTab(1);
+              go("home");
+              setToast("Diary removed from your shelf.");
+              return true;
+            }}
             moment={current}
             progress={progress}
             playing={playing}
@@ -354,8 +361,7 @@ export default function App() {
                   moments={moments}
                   open={open}
                   remove={(ids) => {
-                    if (!persist(removeMoments(moments, ids)))
-                      return false;
+                    if (!persist(removeMoments(moments, ids))) return false;
                     setToast(`${ids.length} records removed from your shelf.`);
                     return true;
                   }}

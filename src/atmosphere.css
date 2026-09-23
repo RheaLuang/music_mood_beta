@@ -1077,3 +1077,10 @@ mark {
   line-height: 1.7;
   font-size: 14px;
 }
+.collection-item { position:relative; }
+.album-check { position:absolute; z-index:2; top:6px; left:6px; width:25px; height:25px; border:1px solid #788473; background:#faf9f2; border-radius:50%; display:grid; place-items:center; color:#fff; }
+.album-selected .album-check { background:#667b68; }
+.album-selected .sleeve { outline:2px solid #667b68; outline-offset:4px; }
+.reading-edit-actions { display:flex; align-items:center; gap:2px; }
+.reading-edit-actions button { min-width:36px; min-height:44px; }
+.reading .page-top > span { flex:1; min-width:0; }
