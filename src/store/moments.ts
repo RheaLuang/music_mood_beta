@@ -1,5 +1,5 @@
 import type { DiaryBlock, Moment, Song } from "../types";
-export const STORAGE_KEY = "rambling.moments.v1";
+export const STORAGE_KEY = "rambling.moments.v2";
 export function createMoment(song: Song): Moment {
   return {
     id: crypto.randomUUID(),
@@ -97,4 +97,9 @@ export function validMoments(value: unknown): value is Moment[] {
               [1, 2, 3, 4, 5].includes(m.mood.level)))),
     )
   );
+}
+
+export function removeMoments(items: Moment[], ids: string[]): Moment[] {
+  const selected = new Set(ids);
+  return items.filter(item => !selected.has(item.id));
 }

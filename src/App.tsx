@@ -10,6 +10,7 @@ import {
 import type { Moment } from "./types";
 import {
   createMoment,
+  removeMoments,
   STORAGE_KEY,
   upsertMoment,
   validMoments,
@@ -31,7 +32,12 @@ function route(): Route {
 export default function App() {
   const [moments, setMoments] = useState<Moment[]>(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const items = JSON.parse(saved);
+        if (validMoments(items)) return items.map(localizeStoredMoment);
+      }
+      const raw = localStorage.getItem("rambling.moments.v1");
       const data = raw ? JSON.parse(raw) : null;
       return validMoments(data)
         ? ensureYearExamples(data.map(localizeStoredMoment))
@@ -99,6 +105,7 @@ export default function App() {
     try {
       if (!localStorage.getItem(STORAGE_KEY))
         localStorage.setItem(STORAGE_KEY, JSON.stringify(moments));
+      localStorage.removeItem("rambling.moments.v1");
     } catch {}
   }, []);
   useEffect(() => {
@@ -343,7 +350,16 @@ export default function App() {
                 </p>
               </section>
               <section className="collection-page">
-                <Collection moments={moments} open={open} />
+                <Collection
+                  moments={moments}
+                  open={open}
+                  remove={(ids) => {
+                    if (!persist(removeMoments(moments, ids)))
+                      return false;
+                    setToast(`${ids.length} records removed from your shelf.`);
+                    return true;
+                  }}
+                />
               </section>
             </div>
           </main>

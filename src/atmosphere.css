@@ -978,3 +978,102 @@ mark {
   min-width: 0;
   max-width: none;
 }
+
+.collection-management {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.collection-management button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+.album-manager h1 {
+  font-size: 32px;
+}
+.album-manager > p {
+  color: #777a70;
+  line-height: 1.7;
+}
+.manage-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 0;
+}
+.manage-actions button {
+  padding: 10px 12px;
+  border: 1px solid #c7c9bf;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.manage-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.manage-actions span {
+  font-size: 12px;
+  color: #73796d;
+}
+.manage-records {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 30px;
+}
+.manage-records label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #dddcd2;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.manage-records label.is-selected {
+  background: #e6e9df;
+  border-color: #899783;
+}
+.manage-records input {
+  accent-color: #627768;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.manage-records img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+.manage-records strong {
+  display: block;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.manage-records small {
+  display: block;
+  font-size: 11px;
+  color: #777b72;
+  margin-top: 5px;
+}
+.delete-confirmation {
+  max-width: 360px;
+  width: calc(100% - 40px);
+  border: 1px solid #d7d8cf;
+  border-radius: 18px;
+  padding: 24px;
+  background: #f7f6ef;
+  color: #30372d;
+}
+.delete-confirmation::backdrop {
+  background: #25332970;
+  backdrop-filter: blur(5px);
+}
+.delete-confirmation p {
+  line-height: 1.7;
+  font-size: 14px;
+}

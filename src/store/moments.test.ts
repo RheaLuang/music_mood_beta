@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seedMoments, songs } from "../data/demo";
-import { upsertMoment, validMoments } from "./moments";
+import { upsertMoment, validMoments, removeMoments } from "./moments";
 describe("Moment invariants", () => {
   it("preserves the original soundtrack and captured timestamp on edit", () => {
     const data = seedMoments();
@@ -30,4 +30,14 @@ describe("Moment invariants", () => {
     expect(validMoments([{ id: "bad" }])).toBe(false);
     expect(validMoments(seedMoments())).toBe(true);
   });
+});
+
+it("removes only selected IDs, preserves same-song records, and persists an empty archive", () => {
+  const source = seedMoments();
+  const ids = [source[0].id, source[2].id];
+  const remaining = removeMoments(source, ids);
+  expect(remaining).toEqual(source.filter(m => !ids.includes(m.id)));
+  expect(source).toHaveLength(18);
+  expect(validMoments(JSON.parse(JSON.stringify(remaining)))).toBe(true);
+  expect(removeMoments(source, source.map(m => m.id))).toEqual([]);
 });
