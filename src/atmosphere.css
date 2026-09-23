@@ -972,3 +972,9 @@ mark {
 .share-player .demo-note {
   margin-top: 10px;
 }
+/* Every month uses the same eight-slot spine width as the fullest shelf. */
+.mini-shelf .archive-spine {
+  flex: 0 0 calc((100% - 21px) / 8);
+  min-width: 0;
+  max-width: none;
+}
